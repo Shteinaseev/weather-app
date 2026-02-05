@@ -11,15 +11,81 @@
 
 <body>
     <main data-js class="content">
-        <!-- <h1>Weather app</h1> -->
-        <div data-js-result class="result">
-            <h2 data-js-city class="city-name"></h2>
+        <aside data-js-aside class="aside">
+            <input data-js-search type="text" class="search">
+            <img src="" alt="">
             <p data-js-temp class="temperature"></p>
-            <p data-js-feels-like class="feels-like"></p>
-            <p data-js-desc class="description"></p>
-            <p data-js-wind class="wind"></p>
-            <p data-js-humidity class="humidity"></p>
-        </div>
+            <p data-js-date-time class="date-time"></p>
+        </aside>
+        <section class="weather">
+            <h3 class="prognose">
+                </h2>
+                <article class="card">
+                    <p class="time"></p>
+                    <img src="" alt="" class="card-logo">
+                    <p class="temp"></p>
+                </article>
+                <article class="card">
+                    <p class="time"></p>
+                    <img src="" alt="" class="card-logo">
+                    <p class="temp"></p>
+                </article>
+                <article class="card">
+                    <p class="time"></p>
+                    <img src="" alt="" class="card-logo">
+                    <p class="temp"></p>
+                </article>
+                <article class="card">
+                    <p class="time"></p>
+                    <img src="" alt="" class="card-logo">
+                    <p class="temp"></p>
+                </article>
+                <article class="card">
+                    <p class="time"></p>
+                    <img src="" alt="" class="card-logo">
+                    <p class="temp"></p>
+                </article>
+                <article class="card">
+                    <p class="time"></p>
+                    <img src="" alt="" class="card-logo">
+                    <p class="temp"></p>
+                </article>
+        </section>
+        <section class="highlights">
+            <h3>Today's highlights</h3>
+            <article class="forecast-card">
+                <p class="UV-index">
+                    <span>Uv index - </span>
+                    <span data-js-uv-index></span>
+                </p>
+                <p class="wind-speed">
+                    <span>Wind speed - </span>
+                    <span data-js-wind-speed></span>
+                </p>
+                <p class="sunrise">
+                    <span>Sunrise - </span>
+                    <span data-js-sunrise-time></span>
+                </p>
+                <p class="sunset">
+                    <span>Sunset - </span>
+                    <span data-js-sunset-time></span>
+                </p>
+            </article>
+            <article class="info-card">
+                <p class="humidity">
+                    <span>Humidity - </span>
+                    <span data-js-hum></span>
+                </p>
+                <p class="visibillity">
+                    <span>Visibility - </span>
+                    <span data-js-vis></span>
+                </p>
+                <p class="air-quality">
+                    <span>Air quality - </span>
+                    <span data-js-air-qua></span>
+                </p>
+            </article>
+        </section>
     </main>
 </body>
 
