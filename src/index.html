@@ -10,48 +10,70 @@
 </head>
 
 <body>
+    <svg style="display: none">
+        <filter id="glass-distortion">
+            <feTurbulence type="turbulence" baseFrequency="0.008" numOctaves="2" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="77" />
+        </filter>
+    </svg>
     <main data-js class="content">
-        <aside data-js-aside class="aside">
+        <div class="glass-filter"></div>
+        <div class="glass-overlay"></div>
+        <div class="glass-specular"></div>
+        <aside data-js-aside class="aside item">
             <input name="search" data-js-search type="text" class="search">
             <img src="" alt="">
+            <h2 class="location"></h2>
             <p data-js-temp class="temperature"></p>
             <p data-js-date-time class="date-time"></p>
+            <aside class="forecast">
+                <h3>The Next Two Days Forecast</h3>
+                <div class="day">
+                    <img class="weather-icon" src="" alt="">
+                    <p class="date"></p>
+                    <p class="weather"></p>
+                </div>
+                <div class="day">
+                    <img class="weather-icon" src="" alt="">
+                    <p  class="date"></p>
+                    <p class="weather"></p>
+                </div>
+            </aside>
         </aside>
-        <section class="weather">
-            <h3 class="prognose">
-                </h2>
-                <article class="card">
-                    <p class="time"></p>
-                    <img src="" alt="" class="card-logo">
-                    <p class="temp"></p>
-                </article>
-                <article class="card">
-                    <p class="time"></p>
-                    <img src="" alt="" class="card-logo">
-                    <p class="temp"></p>
-                </article>
-                <article class="card">
-                    <p class="time"></p>
-                    <img src="" alt="" class="card-logo">
-                    <p class="temp"></p>
-                </article>
-                <article class="card">
-                    <p class="time"></p>
-                    <img src="" alt="" class="card-logo">
-                    <p class="temp"></p>
-                </article>
-                <article class="card">
-                    <p class="time"></p>
-                    <img src="" alt="" class="card-logo">
-                    <p class="temp"></p>
-                </article>
-                <article class="card">
-                    <p class="time"></p>
-                    <img src="" alt="" class="card-logo">
-                    <p class="temp"></p>
-                </article>
+        <section class="weather item">
+            <h3 class="prognose"></h3>
+            <article class="card">
+                <p class="time"></p>
+                <img src="" alt="" class="card-logo">
+                <p class="temp"></p>
+            </article>
+            <article class="card">
+                <p class="time"></p>
+                <img src="" alt="" class="card-logo">
+                <p class="temp"></p>
+            </article>
+            <article class="card">
+                <p class="time"></p>
+                <img src="" alt="" class="card-logo">
+                <p class="temp"></p>
+            </article>
+            <article class="card">
+                <p class="time"></p>
+                <img src="" alt="" class="card-logo">
+                <p class="temp"></p>
+            </article>
+            <article class="card">
+                <p class="time"></p>
+                <img src="" alt="" class="card-logo">
+                <p class="temp"></p>
+            </article>
+            <article class="card">
+                <p class="time"></p>
+                <img src="" alt="" class="card-logo">
+                <p class="temp"></p>
+            </article>
         </section>
-        <section class="highlights">
+        <section class="highlights item">
             <h3>Today's highlights</h3>
             <article class="forecast-card">
                 <p class="UV-index">
