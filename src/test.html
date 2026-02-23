@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <style>
+        body {
+            display: grid;
+            place-content: center;
+            height: 100vh;
+            background-color: #9874FF;
+        }
+
+        .graph {
+            aspect-ratio: 2 / 1;
+            text-align: center;
+            font-family: sans-serif;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            row-gap: 0.8rem;
+        }
+
+        .graph svg {
+            width: 100%;
+            height: auto;
+            filter: drop-shadow(0 0 1rem #9874FF);
+        }
+
+        .graph circle {
+            transition: transform 0.6s ease;
+        }
+
+        .label {
+            font-size: 0.9rem;
+        }
+
+        #value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        #status {
+            margin: 0;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+    </style>
+    <div class="graph" data-js-air-quality>
+        <h3>Air Quality</h3>
+        <svg viewBox="0 0 200 110" data-js-air-quality-graph>
+            <!-- Градиент -->
+            <defs>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#CDBBFF" />
+                    <stop offset="10%" stop-color="#BFA3FF" />
+                    <stop offset="20%" stop-color="#AC8EFF" />
+                    <stop offset="30%" stop-color="#A07FFF" />
+                    <stop offset="40%" stop-color="#9874FF" />
+                    <stop offset="50%" stop-color="#9068FF" />
+                    <stop offset="60%" stop-color="#865CFD" />
+                    <stop offset="70%" stop-color="#7C4AFD" />
+                    <stop offset="80%" stop-color="#713FFD" />
+                    <stop offset="100%" stop-color="#5E2AFD" />
+                </linearGradient>
+            </defs>
+
+            <!-- Фоновая дуга (полупрозрачная) -->
+            <path d="M 20 90 A 80 80 0 0 1 180 90" stroke="#ffffff25" stroke-width="18" fill="none" />
+
+            <!-- Заполняемая дуга -->
+            <path id="progress" d="M 20 90 A 80 80 0 0 1 180 90" stroke="url(#gradient)" stroke-width="18" fill="none"
+                stroke-dasharray="251.3" stroke-dashoffset="251.3" stroke-linecap="round" />
+
+            <!-- Шарик-индикатор -->
+            <g id="needle">
+                <circle cx="100" cy="90" r="11" fill="#fff" stroke="#5E2AFD" stroke-width="3" />
+            </g>
+        </svg>
+
+        <div class="label" data-js-air-quality-label>
+            <span id="value">5/5</span>
+            <p id="status">Very Poor</p>
+        </div>
+    </div>
+    <script>
+        function updateAirQuality(value) {
+            value = Math.max(0, Math.min(5, Number(value) || 0));
+            console.log("value:", value, "→ progress:", (value / 5).toFixed(3));
+
+            const progress = value / 5;
+            const arcLength = Math.PI * 80;           // точнее, чем 251.3
+
+            // Заполнение дуги (от полного к пустому при progress 0→1)
+            const offset = arcLength * (1 - progress);
+            document.getElementById('progress').style.strokeDashoffset = offset;
+
+            // Самое важное — правильный угол для верхней полуокружности
+            // -90° = левый край, 0° = верх, +90° = правый край
+            const angleDeg = -90 + progress * 180;
+            const rad = angleDeg * (Math.PI / 180);
+
+            // Центр дуги и радиус — берём точно из твоего <path>
+            const cx = 100;
+            const cy = 90;         
+            const radius = 80;
+
+            // Вычисляем координаты точки на окружности
+            const x = cx + radius * Math.cos(rad);
+            const y = cy - radius * Math.sin(rad);   // минус — чтобы идти по ВЕРХНЕЙ дуге
+
+            console.log(x, y)
+            // Перемещаем группу needle относительно её исходного центра
+            const needle = document.getElementById('needle');
+            needle.setAttribute('transform', `translate(${-(y - cy)}, ${-(x - cx)})`);
+
+            document.getElementById('value').textContent = `${value.toFixed(1)}/5`;
+
+            const statuses = [
+                { min: 4.1, text: "Very Poor" },
+                { min: 3.1, text: "Poor" },
+                { min: 2.1, text: "Moderate" },
+                { min: 1.1, text: "Fair" },
+                { min: 0, text: "Good" }
+            ];
+
+            const status = statuses.find(s => value >= s.min)?.text || "Good";
+            document.getElementById('status').textContent = status;
+        }
+
+        updateAirQuality(4);
+    </script>
+</body>
+
+</html>

@@ -13,7 +13,13 @@ class weatherApp {
         feel: '[data-js-feels-like]',
         wind: '[data-js-wind]',
         temp: '[data-js-temp]',
-        forecast: '[date-js-forecast]'
+        forecast: '[data-js-forecast]',
+        airQuality: '[data-js-air-quality]',
+        uvIndex: '[data-js-uv-index]',
+        airQualityGraph: '[data-js-air-quality-graph]',
+        uvIndexGraph: '[data-js-air-uv-index]',
+        airQualityLabel: '[data-js-air-quality-label]',
+        uvIndexLabel: '[data-js-uv-index-label]',
     };
 
     apiKey = 'f03eba2e18d64401b84150205260402';
@@ -35,7 +41,12 @@ class weatherApp {
         this.temp = this.aside.querySelector(this.selectors.temp);
         this.dateTime = this.aside.querySelector(this.selectors.dateTime);
         this.forecast = this.aside.querySelector(this.selectors.forecast);
-
+        this.airQuality = this.aside.querySelector(this.selectors.airQuality);
+        this.uvIndex = this.aside.querySelector(this.selectors.uvIndex);
+        this.airQualityGraph = this.airQuality.querySelector(this.selectors.airQualityGraph);
+        this.uvIndexGraph = this.uvIndex.querySelector(this.selectors.uvIndexGraph);
+        this.airQualityLabel = this.airQuality.querySelector(this.selectors.airQualityLabel);
+        this.uvIndexLabel = this.uvIndex.querySelector(this.selectors.uvIndexLabel);
 
         this.bindEvents();
         this.updateClock()
@@ -50,6 +61,7 @@ class weatherApp {
                 this.fetchWeather('auto:ip');
             }
         );
+        this.setGraphValue(2);
     }
 
     debounce(func, delay) {
@@ -70,7 +82,6 @@ class weatherApp {
 
     onBlur() {
         this.fetchWeather(this.search.value);
-        console.log("sd ", this.search.value)
     }
 
     formateDate(date) {
@@ -91,55 +102,91 @@ class weatherApp {
         this.dateTime.textContent = `${day}, ${hours}:${minutes}`;
     }
 
-    setMainIcon(code) {
-        console.log(code)
-        this.img.setAttribute('src', `icons/${this.timeOfday}/${code}.png`)
-    }
+    setGraphValue(value) {
+        const progress = value / 5;
+        const arcLength = Math.PI * 80;
 
-    setForecastNextTwoDays(forecastday) {
-        const dayEls = this.forecast.querySelectorAll('[date-js-day]')
-        dayEls.forEach((i, j) => {
-            let { code, text } = forecastday[j + 1].day.condition;
-            let { date } = forecastday[j + 1]
-            i.children[0].setAttribute('src', `icons/${this.timeOfday}/${code}.png`);
-            i.children[1].textContent = this.formateDate(date);
-            i.children[2].textContent = text;
-        })
-    }
+        const offset = arcLength * (1 - progress);
+        this.airQualityGraph.children[2].style.strokeDashoffset = offset;
 
-    bindEvents() {
-        this.search.addEventListener('blur', (event) => {
-            this.onBlur(event)
+        const angleDeg = -90 + progress * 180;
+        const rad = angleDeg * (Math.PI / 180);
+
+        const cx = 100;
+        const cy = 90;
+        const radius = 80;
+
+        const x = cx + radius * Math.cos(rad);
+        const y = cy - radius * Math.sin(rad);
+
+        this.airQualityGraph.children[3].setAttribute('transform', `translate(${-(y - cy)}, ${-(x - cx)})`);
+
+        this.airQualityLabel.children[0].textContent = `${value}/5`;
+
+
+        const statuses = [
+            { min: 4.1, text: "Very Poor" },
+            { min: 3.1, text: "Poor" },
+            { min: 2.1, text: "Moderate" },
+            { min: 1.1, text: "Fair" },
+            { min: 0, text: "Good" }
+        ];
+
+        const status = statuses.find(s => value >= s.min)?.text || "Good";
+        this.airQualityLabel.children[1].textContent = status;
+    }
+}
+
+
+setMainIcon(code) {
+    console.log(code)
+    this.img.setAttribute('src', `icons/${this.timeOfday}/${code}.png`)
+}
+
+setForecastNextTwoDays(forecastday) {
+    const dayEls = this.forecast.querySelectorAll('[data-js-day]')
+    dayEls.forEach((i, j) => {
+        let { code, text } = forecastday[j + 1].day.condition;
+        let { date } = forecastday[j + 1]
+        i.children[0].setAttribute('src', `icons/${this.timeOfday}/${code}.png`);
+        i.children[1].textContent = this.formateDate(date);
+        i.children[2].textContent = text;
+    })
+}
+
+bindEvents() {
+    this.search.addEventListener('blur', (event) => {
+        this.onBlur(event)
+    })
+    this.search.addEventListener('input', this.debounce(this.onInput.bind(this), 500));
+    this.search.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            this.fetchWeather(this.search.value.trim());
+        }
+    });
+}
+
+fetchWeather(q) {
+    const url = `${this.apiUrl}?key=${this.apiKey}&q=${q}&aqi=no&days=3`;
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            const { code } = data.current.condition;
+            const { location } = data
+            const { forecastday } = data.forecast
+
+            console.log(data);
+            this.timeOfday = data.current.is_day ? "day" : "night";
+            this.setMainIcon(code);
+            this.location.textContent = `${location.name}, ${location.country}`;
+            this.temp.textContent = data.current.temp_c;
+            this.setForecastNextTwoDays(forecastday)
         })
-        this.search.addEventListener('input', this.debounce(this.onInput.bind(this), 500));
-        this.search.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                this.fetchWeather(this.search.value.trim());
-            }
+        .catch(error => {
+            console.error('Error fetching weather data:', error);
         });
-    }
-
-    fetchWeather(q) {
-        const url = `${this.apiUrl}?key=${this.apiKey}&q=${q}&aqi=no&days=3`;
-
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                const { code } = data.current.condition;
-                const { location } = data
-                const { forecastday } = data.forecast
-
-                console.log(data);
-                this.timeOfday = data.current.is_day ? "day" : "night";
-                this.setMainIcon(code);
-                this.location.textContent = `${location.name}, ${location.country}`;
-                this.temp.textContent = data.current.temp_c;
-                this.setForecastNextTwoDays(forecastday)
-            })
-            .catch(error => {
-                console.error('Error fetching weather data:', error);
-            });
-    }
+}
 }
 
 const WeatherApp = new weatherApp();
