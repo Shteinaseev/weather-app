@@ -1,6 +1,7 @@
 import { graph } from './graph.js';
+import { forecastCard } from '../components/forecast-card.js';
 
-console.log(graph);
+console.log(graph, forecastCard);
 
 class weatherApp {
     selectors = {
@@ -24,6 +25,7 @@ class weatherApp {
         uvIndexGraph: '[data-js-uv-index-graph]',
         airQualityLabel: '[data-js-air-quality-label]',
         uvIndexLabel: '[data-js-uv-index-label]',
+
     };
 
     apiKey = 'f03eba2e18d64401b84150205260402';
@@ -61,10 +63,9 @@ class weatherApp {
         this.airQualityLabel = this.airQuality.querySelector(this.selectors.airQualityLabel);
         this.uvIndexLabel = this.uvIndex.querySelector(this.selectors.uvIndexLabel);
 
-        console.log(this.graphWrapper);
         this.bindEvents();
         this.updateClock()
-        setInterval(this.updateClock.bind(this), 1000);
+        // setInterval(this.updateClock.bind(this), 1000);
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -77,7 +78,6 @@ class weatherApp {
         );
         // this.airQualityGraph.style.strokeDashoffset = this.setGraphValue(1, 5);
         // this.uvIndexGraph.style.strokeDashoffset = this.setGraphValue(5, 10);
-        this.graph = new graph(this.graphWrapper, 'air-quality', 5)
     }
 
     debounce(func, delay) {
@@ -108,9 +108,10 @@ class weatherApp {
         return `${dayName}, ${monthName} ${dayNumber}`;
     }
 
-    updateClock() {
-        const now = new Date();
+    updateClock(date) {
+        const now = new Date(date);
         const hours = String(now.getHours()).padStart(2, '0');
+        this.hours = now.getHours();
         const minutes = String(now.getMinutes()).padStart(2, '0');
         const day = this.dayNames[now.getDay()]
 
@@ -156,6 +157,22 @@ class weatherApp {
         })
     }
 
+    renderForecastCards(forecastday) {
+        const min = this.hours - 2;
+        const max = min + 23;
+        const hoursArray = []
+        let j = 0;
+        for (let i = min; i <= max; i++) {
+            if (i == 23) {
+                i = 0;
+                ++j;
+            }
+            console.log(i)
+            // hoursArray.push([...forecastday[j].hour][i]);
+        }
+        console.log(hoursArray);
+    }
+
     bindEvents() {
         this.search.addEventListener('blur', (event) => {
             this.onBlur(event)
@@ -183,7 +200,9 @@ class weatherApp {
                 this.setMainIcon(code);
                 this.location.textContent = `${location.name}, ${location.country}`;
                 this.temp.textContent = data.current.temp_c;
-                this.setForecastNextTwoDays(forecastday)
+                this.updateClock(location.localtime);
+                this.setForecastNextTwoDays(forecastday);
+                this.renderForecastCards(forecastday);
             })
             .catch(error => {
                 console.error('Error fetching weather data:', error);
