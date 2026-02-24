@@ -1,5 +1,6 @@
 import { getStatus } from '../config/statuses.js';
 export class GaugeIndicator extends HTMLElement {
+
     viewWidth = Number(this.getAttribute('view-width')) || 200;
     viewHeight = Number(this.getAttribute('view-height')) || 100;
     title = this.getAttribute('title') || 'Air Quality'
@@ -7,12 +8,18 @@ export class GaugeIndicator extends HTMLElement {
     value = Number(this.getAttribute('value') || 0);
     progress = this.value / this.max;
 
+    angleDeg = -90 + this.progress * 180;
+    rad = this.angleDeg * (Math.PI / 180);
+
     cx = this.viewWidth / 2;
     cy = this.viewHeight * 0.9;
     radius = this.viewWidth * 0.4;
-    arcLength = Math.PI * this.radius;
+    arcLength = Math.round(Math.PI * this.radius);
     strokeWidth = this.radius * 0.2;
-    dotRadius = this.radius * 0.14;
+    dotRadius = this.radius * 0.1;
+
+    x = this.cx + this.radius * Math.cos(this.rad);
+    y = this.cy - this.radius * Math.sin(this.rad);
 
     constructor() {
         super();
@@ -24,20 +31,25 @@ export class GaugeIndicator extends HTMLElement {
             <style>
                 svg {
                     filter: drop-shadow(0rem 0rem 1rem #9874FF);
-
-                    g {
-                        transform-origin: center bottom;
-
-                        transform: rotate(-30deg);
-                    }
-
                     path {
                         stroke-linecap: round;
                     }
+                }
+                 
+                p {
+                    margin: 0;
+                }
 
+                #value {
+                    font-size: 1.25rem;
+                    font-weight: 400;
+                }
+
+                #status {
+                    font-size: 1rem;
                 }
             </style>
-            <h3>Air Quality</h3>
+            <h3>${this.title}</h3>
             <svg viewBox="0 0 ${this.viewWidth} ${this.viewHeight}">
                 <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" stop-color="#CDBBFF" />
@@ -57,9 +69,9 @@ export class GaugeIndicator extends HTMLElement {
 
                 <path id="progress" d="M ${this.cx - this.radius} ${this.cy} A ${this.radius} ${this.radius} 0 0 1 ${this.cx + this.radius} ${this.cy}"
                     stroke="url(#gradient)" stroke-width="${this.strokeWidth}" fill="none" stroke-dasharray="${this.arcLength}"
-                    stroke-dashoffset="${this.arcLength * (1 - this.progress)}" />
+                    stroke-dashoffset="${Math.round(this.arcLength * (1 - this.progress))}" />
 
-                <g>
+                <g class="group" >
                     <circle class="needle" cx="${this.cx}" cy="${this.cy}" r="${this.dotRadius}" fill="#fff" />
                 </g>
             </svg>
@@ -68,10 +80,9 @@ export class GaugeIndicator extends HTMLElement {
                 <p id="status">${getStatus(this.value)}</p>
             </div>
         `
-        this.needle = this.shadowRoot.querySelector('.needle');
-        console.log(this.needle)
+        this.needle = this.shadowRoot.querySelector('.group');
         if (this.needle) {
-            needle.setAttribute('transform', `translate(${x - cx}, ${y - cy})`);
+            this.needle.setAttribute('transform', `translate(${-(this.y - this.cy)}, ${-(this.x - this.cx)})`);
         }
 
     }
