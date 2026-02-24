@@ -1,6 +1,4 @@
-import { graph } from './graph.js';
-
-console.log(graph);
+import { GaugeIndicator } from '../components/gauge-indicator.js';
 
 class weatherApp {
     selectors = {
@@ -56,12 +54,7 @@ class weatherApp {
         this.graphWrapper = this.aside.querySelector(this.selectors.graphWrapper);
         this.airQuality = this.aside.querySelector(this.selectors.airQuality);
         this.uvIndex = this.aside.querySelector(this.selectors.uvIndex);
-        this.airQualityGraph = this.airQuality.querySelector(this.selectors.airQualityGraph);
-        this.uvIndexGraph = this.uvIndex.querySelector(this.selectors.uvIndexGraph);
-        this.airQualityLabel = this.airQuality.querySelector(this.selectors.airQualityLabel);
-        this.uvIndexLabel = this.uvIndex.querySelector(this.selectors.uvIndexLabel);
 
-        console.log(this.graphWrapper);
         this.bindEvents();
         this.updateClock()
         setInterval(this.updateClock.bind(this), 1000);
@@ -77,7 +70,6 @@ class weatherApp {
         );
         // this.airQualityGraph.style.strokeDashoffset = this.setGraphValue(1, 5);
         // this.uvIndexGraph.style.strokeDashoffset = this.setGraphValue(5, 10);
-        this.graph = new graph(this.graphWrapper, 'air-quality', 5)
     }
 
     debounce(func, delay) {

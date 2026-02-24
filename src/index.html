@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./styles/style.css">
-    <script src="../scripts/index.js" type="module" defer></script>
+    <script src="./scripts/index.js" type="module" defer></script>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <title>Weather App</title>
 </head>
@@ -49,69 +49,11 @@
                 </div>
             </article>
             <article data-js-graph-wrapper class="graph-wrapper">
-                <div class="graph" data-js-air-quality>
-                    <h3>Air Quality</h3>
-                    <svg viewBox="0 0 200 100" data-js-air-quality-svg>
-                        <!-- Фон дуги -->
-                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#CDBBFF" />
-                            <stop offset="10%" stop-color="#BFA3FF" />
-                            <stop offset="20%" stop-color="#AC8EFF" />
-                            <stop offset="30%" stop-color="#A07FFF" />
-                            <stop offset="40%" stop-color="#9874FF" />
-                            <stop offset="50%" stop-color="#9068FF" />
-                            <stop offset="60%" stop-color="#865CFD" />
-                            <stop offset="70%" stop-color="#7C4AFD" />
-                            <stop offset="80%" stop-color="#713FFD" />
-                            <stop offset="100%" stop-color="#5E2AFD" />
-                        </linearGradient>
+                <gauge-indicator title="Air Quality" value="4" max="5" scale="air">
+                </gauge-indicator>
 
-                        <path d="M 20 90 A 80 80 0 0 1 180 90" stroke="#ffffff25" stroke-width="18" fill="none" />
-
-                        <path data-js-air-quality-scale id="progress" d="M 20 90 A 80 80 0 0 1 180 90"
-                            stroke="url(#gradient)" stroke-width="18" fill="none" stroke-dasharray="251.3"
-                            stroke-dashoffset="0" />
-
-                        <g>
-                            <circle class="needle" cx="100" cy="90" r="11" fill="#fff" />
-                        </g>
-                    </svg>
-                    <div class="label" data-js-air-quality-label>
-                        <span id="value">5/5</span>
-                        <p id="status">Very Poor</p>
-                    </div>
-                </div>
-                <div class="graph" data-js-uv-index>
-                    <h3>UV Index</h3>
-                    <svg viewBox="0 0 200 100" data-js-uv-index-svg>
-                        <!-- Фон дуги -->
-                        <linearGradient id="gradient-2" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#CDBBFF" />
-                            <stop offset="10%" stop-color="#BFA3FF" />
-                            <stop offset="20%" stop-color="#AC8EFF" />
-                            <stop offset="30%" stop-color="#A07FFF" />
-                            <stop offset="40%" stop-color="#9874FF" />
-                            <stop offset="50%" stop-color="#9068FF" />
-                            <stop offset="60%" stop-color="#865CFD" />
-                            <stop offset="70%" stop-color="#7C4AFD" />
-                            <stop offset="80%" stop-color="#713FFD" />
-                            <stop offset="100%" stop-color="#5E2AFD" />
-                        </linearGradient>
-
-                        <path d="M 20 90 A 80 80 0 0 1 180 90" stroke="#ffffff25" stroke-width="18" fill="none" />
-
-                        <path data-js-uv-index-scale id="progress-2" d="M 20 90 A 80 80 0 0 1 180 90"
-                            stroke="url(#gradient-2)" stroke-width="18" fill="none" stroke-dasharray="251.3"
-                            stroke-dashoffset="0" />
-                        <g>
-                            <circle data-js-uv-index-dot class="dot" cx="100" cy="90" r="11" fill="#fff" />
-                        </g>
-                    </svg>
-                    <div class="label" data-js-uv-index-label>
-                        <span id="value">10/10</span>
-                        <p id="status">Very Poor</p>
-                    </div>
-                </div>
+                <gauge-indicator title="UV Index" value="7" max="10" scale="uv">
+                </gauge-indicator>
             </article>
         </aside>
         <section class="weather item">
