@@ -5,6 +5,7 @@ class weatherApp {
     selectors = {
         root: '[data-js]',
         aside: '[data-js-aside]',
+        weather: '[data-js-weather]',
         search: '[data-js-search]',
         img: '[data-js-img]',
         location: '[data-js-location]',
@@ -19,11 +20,6 @@ class weatherApp {
         graphWrapper: '[data-js-graph-wrapper]',
         airQuality: '[data-js-air-quality]',
         uvIndex: '[data-js-uv-index]',
-        airQualityGraph: '[data-js-air-quality-graph]',
-        uvIndexGraph: '[data-js-uv-index-graph]',
-        airQualityLabel: '[data-js-air-quality-label]',
-        uvIndexLabel: '[data-js-uv-index-label]',
-
     };
 
     apiKey = 'f03eba2e18d64401b84150205260402';
@@ -36,16 +32,9 @@ class weatherApp {
     ];
     timeOfday = "day"
 
-    statuses = [
-        { min: 4.1, text: "Very Poor" },
-        { min: 3.1, text: "Poor" },
-        { min: 2.1, text: "Moderate" },
-        { min: 1.1, text: "Fair" },
-        { min: 0, text: "Good" }
-    ];
-
     constructor() {
         this.root = document.querySelector(this.selectors.root);
+
         this.aside = this.root.querySelector(this.selectors.aside);
         this.search = this.aside.querySelector(this.selectors.search);
         this.img = this.aside.querySelector(this.selectors.img);
@@ -57,7 +46,7 @@ class weatherApp {
         this.airQuality = this.aside.querySelector(this.selectors.airQuality);
         this.uvIndex = this.aside.querySelector(this.selectors.uvIndex);
 
-        console.log(GaugeIndicator, forecastCard)
+        this.weather = this.root.querySelector(this.selectors.weather);
 
         this.bindEvents();
         this.updateClock()
@@ -111,28 +100,6 @@ class weatherApp {
         this.dateTime.textContent = `${day}, ${hours}:${minutes}`;
     }
 
-    setGraphValue(value, percentage) {
-        const progress = value / percentage;
-        const arcLength = Math.PI * 80;
-
-        return arcLength * (1 - progress);
-    }
-
-    setDotLocation(value, percentage) {
-        const progress = value / percentage;
-        const angleDeg = -90 + progress * 180;
-        const rad = angleDeg * (Math.PI / 180);
-
-        const cx = 100;
-        const cy = 90;
-        const radius = 80;
-
-        const x = cx + radius * Math.cos(rad);
-        const y = cy - radius * Math.sin(rad);
-
-        this.airQualityGraph.children[3].setAttribute('transform', `translate(${-(y - cy)}, ${-(x - cx)})`);
-        this.airQualityLabel.children[0].textContent = `${value}/5`;
-    }
 
     setMainIcon(code) {
         console.log(code)
@@ -149,20 +116,33 @@ class weatherApp {
             i.children[2].textContent = text;
         })
     }
+    createEl(hour) {
+        const el = document.createElement('forecast-card');
+        const attrs = {
+            time: hour.time.split(' ')[1],
+            code: hour.condition.code,
+            temp_c: hour.temp_c
+        };
+
+        for (const [key, value] of Object.entries(attrs)) {
+            el.setAttribute(key, value);
+        }
+        return el;
+    }
 
     renderForecastCards(forecastday) {
-        const min = this.hours - 2;
-        const max = min + 23;
-        const hoursArray = []
-        let j = 0;
-        for (let i = min; i <= max; i++) {
-            if (i == 23) {
-                ++j;
-            }
-            console.log(i)
-            // hoursArray.push([...forecastday[j].hour][i]);
+        const hoursArray = [];
+        const start = this.hours - 1;
+        const totalHours = forecastday[0].hour;
+
+        for (let i = 0; i <= 24; i++) {
+            const index = (start + i + 24) % 24;
+            hoursArray.push(totalHours[index]);
         }
-        console.log(hoursArray);
+
+        hoursArray.forEach((hour) => {
+            this.weather.append(this.createEl(hour));
+        });
     }
 
     bindEvents() {
@@ -178,7 +158,7 @@ class weatherApp {
     }
 
     fetchWeather(q) {
-        const url = `${this.apiUrl}?key=${this.apiKey}&q=${q}&aqi=no&days=3`;
+        const url = `${this.apiUrl}?key=${this.apiKey}&q=${q}&aqi=yes&days=3`;
 
         fetch(url)
             .then(response => response.json())
@@ -195,6 +175,7 @@ class weatherApp {
                 this.updateClock(location.localtime);
                 this.setForecastNextTwoDays(forecastday);
                 this.renderForecastCards(forecastday);
+                this.airQuality.setAttribute('value', data.current.air_quality["us-epa-index"]);
             })
             .catch(error => {
                 console.error('Error fetching weather data:', error);

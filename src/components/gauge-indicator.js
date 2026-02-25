@@ -1,32 +1,28 @@
 import { getStatus } from '../config/statuses.js';
 export class GaugeIndicator extends HTMLElement {
+    static observedAttributes = ['value', 'max', 'title', 'scale', 'view-width', 'view-height'];
 
-    viewWidth = Number(this.getAttribute('view-width')) || 200;
-    viewHeight = Number(this.getAttribute('view-height')) || 100;
     title = this.getAttribute('title') || 'Air Quality'
-    max = Number(this.getAttribute('max') || 5);
-    value = Number(this.getAttribute('value') || 0);
-    progress = this.value / this.max;
+    max = Number(this.getAttribute('max')) || 5;
+    value = Number(this.getAttribute('value')) || 0;
 
-    angleDeg = -90 + this.progress * 180;
-    rad = this.angleDeg * (Math.PI / 180);
-
-    cx = this.viewWidth / 2;
-    cy = this.viewHeight * 0.9;
-    radius = this.viewWidth * 0.4;
-    arcLength = Math.round(Math.PI * this.radius);
-    strokeWidth = this.radius * 0.2;
-    dotRadius = this.radius * 0.1;
-
-    x = this.cx + this.radius * Math.cos(this.rad);
-    y = this.cy - this.radius * Math.sin(this.rad);
-
-    constructor() {
-        super();
-        this.attachShadow({ mode: 'open' });
+    recalculateValues() {
+        this.viewWidth = Number(this.getAttribute('view-width')) || 200;
+        this.viewHeight = Number(this.getAttribute('view-height')) || 100;
+        this.progress = this.value / this.max;
+        this.angleDeg = -90 + this.progress * 180;
+        this.rad = this.angleDeg * (Math.PI / 180);
+        this.cx = this.viewWidth / 2;
+        this.cy = this.viewHeight * 0.9;
+        this.radius = this.viewWidth * 0.4;
+        this.arcLength = Math.round(Math.PI * this.radius);
+        this.strokeWidth = this.radius * 0.2;
+        this.dotRadius = this.radius * 0.1;
+        this.x = this.cx + this.radius * Math.cos(this.rad);
+        this.y = this.cy - this.radius * Math.sin(this.rad);
     }
 
-    connectedCallback() {
+    render() {
         this.shadowRoot.innerHTML = `
             <style>
                 svg {
@@ -35,7 +31,7 @@ export class GaugeIndicator extends HTMLElement {
                         stroke-linecap: round;
                     }
                 }
-                 
+
                 p {
                     margin: 0;
                 }
@@ -85,6 +81,29 @@ export class GaugeIndicator extends HTMLElement {
             this.needle.setAttribute('transform', `translate(${-(this.y - this.cy)}, ${-(this.x - this.cx)})`);
         }
 
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (oldValue === newValue) return;
+        if (name === 'value') this.value = Number(newValue) || 0;
+        if (name === 'max') this.max = Number(newValue) || 5;
+        if (name === 'title') this.title = newValue || 'Air Quality';
+        if (name === 'view-width') this.viewWidth = Number(newValue) || 200;
+        if (name === 'view-height') this.viewHeight = Number(newValue) || 100;
+        if (name === 'scale') this.scale = newValue || 'air';
+
+        this.recalculateValues();
+        this.render();
+    }
+
+    constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+    }
+
+    connectedCallback() {
+        this.recalculateValues();
+        this.render();
     }
 
 }
