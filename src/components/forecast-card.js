@@ -1,14 +1,14 @@
 export class forecastCard extends HTMLElement {
 
-    static observedAttributes = ['time', 'code', 'temp_c'];
+    static observedAttributes = ['time', 'code', 'temp_c', 'is_day'];
 
     time = this.getAttribute('time');
     code = this.getAttribute('code');
     temp_c = this.getAttribute('temp_c');
+    timeOfday = Number(this.getAttribute('is_day')) ? "day" : "night";
 
     constructor() {
         super();
-
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -16,22 +16,24 @@ export class forecastCard extends HTMLElement {
         if (name === 'time') this.time = newValue;
         if (name === 'code') this.code = Number(newValue);
         if (name === 'temp_c') this.temp_c = Number(newValue);
+        if (name === 'is_day') this.timeOfday = Number(newValue) ? "day" : "night";
+
+        this.render();
     }
 
-    connectedCallback() {
+    render() {
         this.innerHTML = `
-            <style>
-                .card-logo {
-                    max-width: 3.5rem;
-                    max-height: 2.5rem;
-                }
-            </style>
             <p class="time">
                 ${this.time}
             </p>
-            <img src="./icons/day/${this.code}.png" alt="" class="card-logo">
-            <p class="temp">${this.temp_c}</p>
+            <img src="./icons/${this.timeOfday}/${this.code}.png" alt="" class="card-logo">
+            <p class="temp">${this.temp_c}°C</p>
+            
         `
+    }
+
+    connectedCallback() {
+        this.render();
     }
 
 }

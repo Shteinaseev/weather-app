@@ -20,10 +20,12 @@ class weatherApp {
         graphWrapper: '[data-js-graph-wrapper]',
         airQuality: '[data-js-air-quality]',
         uvIndex: '[data-js-uv-index]',
+        suggestions: '[data-js-suggestions]'
     };
 
     apiKey = 'f03eba2e18d64401b84150205260402';
     apiUrl = 'http://api.weatherapi.com/v1/forecast.json';
+    apiUrlSearch = 'http://api.weatherapi.com/v1/search.json'
     apiUrlForecast = 'http://api.weatherapi.com/v1/forecast.json'
     dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     monthNames = [
@@ -37,6 +39,7 @@ class weatherApp {
 
         this.aside = this.root.querySelector(this.selectors.aside);
         this.search = this.aside.querySelector(this.selectors.search);
+        this.suggestions = this.aside.querySelector(this.selectors.suggestions);
         this.img = this.aside.querySelector(this.selectors.img);
         this.location = this.aside.querySelector(this.selectors.location);
         this.temp = this.aside.querySelector(this.selectors.temp);
@@ -72,8 +75,10 @@ class weatherApp {
 
     onInput(event) {
         const value = event.target.value.trim();
+
         if (value) {
             this.fetchWeather(value);
+            this.fetchCity(value);
         }
     }
 
@@ -116,17 +121,23 @@ class weatherApp {
             i.children[2].textContent = text;
         })
     }
-    createEl(hour) {
-        const el = document.createElement('forecast-card');
+
+    updateAttrs(el, hour) {
         const attrs = {
             time: hour.time.split(' ')[1],
             code: hour.condition.code,
-            temp_c: hour.temp_c
+            temp_c: hour.temp_c,
+            is_day: hour.is_day
         };
-
         for (const [key, value] of Object.entries(attrs)) {
             el.setAttribute(key, value);
         }
+        return el;
+    }
+
+    createEl(hour) {
+        const el = document.createElement('forecast-card');
+        this.updateAttrs(el, hour);
         return el;
     }
 
@@ -134,27 +145,60 @@ class weatherApp {
         const hoursArray = [];
         const start = this.hours - 1;
         const totalHours = forecastday[0].hour;
+        let i = 0;
 
         for (let i = 0; i <= 24; i++) {
             const index = (start + i + 24) % 24;
             hoursArray.push(totalHours[index]);
         }
 
-        hoursArray.forEach((hour) => {
-            this.weather.append(this.createEl(hour));
-        });
+        if (this.weather.children.length >= 24) {
+            for (let el of this.weather.children) {
+                this.updateAttrs(el, hoursArray[i++]);
+            }
+        } else {
+            hoursArray.forEach((hour) => {
+                this.weather.append(this.createEl(hour));
+            });
+        }
     }
 
     bindEvents() {
-        this.search.addEventListener('blur', (event) => {
-            this.onBlur(event)
-        })
         this.search.addEventListener('input', this.debounce(this.onInput.bind(this), 500));
         this.search.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 this.fetchWeather(this.search.value.trim());
             }
         });
+    }
+
+    createSuggestionLi(city) {
+        const li = document.createElement('li');
+
+        li.innerHTML = `
+            <p>${city.name}</p>
+            <div>
+                <span class="region">${city.region}</span>
+                <span class="country">${city.country}</span>
+            </div>
+        `
+
+        return li;
+    }
+
+    fetchCity(q) {
+        const url = `${this.apiUrlSearch}?key=${this.apiKey}&q=${q}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                data.forEach((city) => {
+                    console.log(this.createSuggestionLi(city));
+                    this.suggestions.append(this.createSuggestionLi(city));
+                })
+            })
+
     }
 
     fetchWeather(q) {
@@ -176,6 +220,8 @@ class weatherApp {
                 this.setForecastNextTwoDays(forecastday);
                 this.renderForecastCards(forecastday);
                 this.airQuality.setAttribute('value', data.current.air_quality["us-epa-index"]);
+                this.uvIndex.setAttribute('value', data.current.uv);
+
             })
             .catch(error => {
                 console.error('Error fetching weather data:', error);
