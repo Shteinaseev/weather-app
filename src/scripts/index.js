@@ -77,13 +77,25 @@ class weatherApp {
         const value = event.target.value.trim();
 
         if (value) {
-            this.fetchWeather(value);
+            [...this.suggestions.children]
+                .forEach(li => {
+                    li.classList.remove('show');
+                    li.classList.add('hide');
+                    setTimeout(() => { li.remove() }, 100);
+                });
             this.fetchCity(value);
         }
     }
 
     onBlur() {
-        this.fetchWeather(this.search.value);
+        setTimeout(() => {
+            [...this.suggestions.children]
+                .forEach(li => {
+                    li.classList.remove('show');
+                    li.classList.add('hide');
+                    setTimeout(() => { li.remove() }, 100);
+                });
+        }, 100);
     }
 
     formateDate(date) {
@@ -164,6 +176,7 @@ class weatherApp {
     }
 
     bindEvents() {
+        this.search.addEventListener('blur', this.onBlur.bind(this));
         this.search.addEventListener('input', this.debounce(this.onInput.bind(this), 500));
         this.search.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
@@ -182,7 +195,6 @@ class weatherApp {
                 <span class="country">${city.country}</span>
             </div>
         `
-
         return li;
     }
 
@@ -195,7 +207,15 @@ class weatherApp {
                 console.log(data);
                 data.forEach((city) => {
                     console.log(this.createSuggestionLi(city));
-                    this.suggestions.append(this.createSuggestionLi(city));
+                    const li = this.createSuggestionLi(city);
+                    li.addEventListener('click', () => {
+                        this.search.value = city.name;
+                        this.fetchWeather(city.name);
+                    })
+                    this.suggestions.append(li);
+                    requestAnimationFrame(() => {
+                        li.classList.add('show');
+                    });
                 })
             })
 
