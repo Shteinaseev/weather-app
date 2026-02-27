@@ -25,6 +25,11 @@ export class GaugeIndicator extends HTMLElement {
     render() {
         this.shadowRoot.innerHTML = `
             <style>
+                h3{
+                    margin: 0;
+                    font-size: clamp(1rem, 2.4vh, 1.5rem);
+                }
+
                 svg {
                     filter: drop-shadow(0rem 0rem 1rem #9874FF);
                     path {
