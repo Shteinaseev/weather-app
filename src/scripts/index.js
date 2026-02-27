@@ -50,6 +50,9 @@ class weatherApp {
         this.uvIndex = this.aside.querySelector(this.selectors.uvIndex);
 
         this.weather = this.root.querySelector(this.selectors.weather);
+        this.weatherContainer = this.weather.closest('.weather-container');
+        this.btnLeft = this.weatherContainer?.querySelector('.scroll-btn.left');
+        this.btnRight = this.weatherContainer?.querySelector('.scroll-btn.right');
 
         this.bindEvents();
         this.updateClock()
@@ -76,13 +79,14 @@ class weatherApp {
     onInput(event) {
         const value = event.target.value.trim();
 
+        [...this.suggestions.children]
+            .forEach(li => {
+                li.classList.remove('show');
+                li.classList.add('hide');
+                setTimeout(() => { li.remove() }, 100);
+            });
+
         if (value) {
-            [...this.suggestions.children]
-                .forEach(li => {
-                    li.classList.remove('show');
-                    li.classList.add('hide');
-                    setTimeout(() => { li.remove() }, 100);
-                });
             this.fetchCity(value);
         }
     }
@@ -164,13 +168,19 @@ class weatherApp {
             hoursArray.push(totalHours[index]);
         }
 
-        if (this.weather.children.length >= 24) {
+        const already = this.weather.children.length >= 24;
+        if (already) {
             for (let el of this.weather.children) {
                 this.updateAttrs(el, hoursArray[i++]);
             }
         } else {
             hoursArray.forEach((hour) => {
                 this.weather.append(this.createEl(hour));
+            });
+            // scroll the current hour into view
+            requestAnimationFrame(() => {
+                const currentCard = this.weather.children[this.hours] || this.weather.children[0];
+                currentCard?.scrollIntoView({ behavior: 'smooth', inline: 'start' });
             });
         }
     }
@@ -183,6 +193,27 @@ class weatherApp {
                 this.fetchWeather(this.search.value.trim());
             }
         });
+
+        // horizontal wheel scrolling
+        if (this.weather) {
+            this.weather.addEventListener('wheel', (e) => {
+                if (e.deltaY === 0) return;
+                e.preventDefault();
+                this.weather.scrollLeft += e.deltaY;
+            }, { passive: false });
+        }
+
+        // arrow buttons
+        if (this.btnLeft) {
+            this.btnLeft.addEventListener('click', () => {
+                this.weather.scrollBy({ left: -this.weather.clientWidth * 0.6, behavior: 'smooth' });
+            });
+        }
+        if (this.btnRight) {
+            this.btnRight.addEventListener('click', () => {
+                this.weather.scrollBy({ left: this.weather.clientWidth * 0.6, behavior: 'smooth' });
+            });
+        }
     }
 
     createSuggestionLi(city) {
@@ -209,8 +240,8 @@ class weatherApp {
                     console.log(this.createSuggestionLi(city));
                     const li = this.createSuggestionLi(city);
                     li.addEventListener('click', () => {
-                        this.search.value = city.name;
-                        this.fetchWeather(city.name);
+                        this.search.value = `${city.name}, ${city.region}`;
+                        this.fetchWeather(city.url);
                     })
                     this.suggestions.append(li);
                     requestAnimationFrame(() => {

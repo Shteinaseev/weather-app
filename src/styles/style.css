@@ -270,11 +270,11 @@ body {
         transform: translateY(-20px);
         display: flex;
         justify-content: space-between;
-        transition: .45s;
+        transition: .3s;
         background-color: #ffffff22;
         padding: .8rem;
-        border-radius: 1rem;
-        backdrop-filter: blur(10px);
+        border-radius: 1.2rem;
+        backdrop-filter: blur(5px);
         box-shadow: inset 8px 8px 8px #cbced155,
             inset -8px -8px 8px #ffffff25,
             0px 50px 100px -20px rgba(234, 234, 255, 0.573),
@@ -285,34 +285,61 @@ body {
             transform: translateY(0);
         }
 
+
         &.hide {
             opacity: 0;
             transform: translateY(-20px);
         }
+
+        &:hover {
+            background-color: #00000022;
+        }
+
     }
 }
 
 .weather {
+    align-self: center;
     grid-area: weather;
     display: flex;
-    flex-wrap: wrap;
     column-gap: 0.8rem;
+    overflow-x: auto;
+    padding: 1rem;
+    height: 15rem;
+    scroll-behavior: smooth;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
 
     h3 {
         flex-basis: 100%;
     }
 
     forecast-card {
+        scroll-snap-align: end;
         padding: 1rem;
         border-radius: 1.1rem;
-        height: 8rem;
+        height: 12rem;
+        aspect-ratio: 1;
         background-color: #ffffff22;
         backdrop-filter: blur(10px);
-        width: 5.6rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        row-gap: .6rem;
+        font-size: 1.4rem;
 
         .card-logo {
-            max-width: 3.5rem;
-            max-height: 2.5rem;
+            max-height: 3.5rem;
         }
     }
+}
+
+.weather::-webkit-scrollbar {
+    height: 6px;
+}
+
+.weather::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
 }
