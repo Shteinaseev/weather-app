@@ -31,9 +31,9 @@ class weatherApp {
     };
 
     apiKey = 'f03eba2e18d64401b84150205260402';
-    apiUrl = 'http://api.weatherapi.com/v1/forecast.json';
-    apiUrlSearch = 'http://api.weatherapi.com/v1/search.json'
-    apiUrlForecast = 'http://api.weatherapi.com/v1/forecast.json'
+    apiUrl = 'https://api.weatherapi.com/v1/forecast.json';
+    apiUrlSearch = 'https://api.weatherapi.com/v1/search.json'
+    apiUrlForecast = 'https://api.weatherapi.com/v1/forecast.json'
     dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     monthNames = [
         "January", "February", "March", "April", "May", "June",
