@@ -3,7 +3,7 @@ export class forecastCard extends HTMLElement {
     static observedAttributes = ['time', 'code', 'temp_c', 'is_day'];
 
     time = this.getAttribute('time');
-    code = this.getAttribute('code');
+    code = this.getAttribute('code') || 1000;
     temp_c = this.getAttribute('temp_c');
     timeOfday = Number(this.getAttribute('is_day')) ? "day" : "night";
 

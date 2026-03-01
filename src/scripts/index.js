@@ -6,21 +6,28 @@ class weatherApp {
         root: '[data-js]',
         aside: '[data-js-aside]',
         weather: '[data-js-weather]',
+        highlights: '[data-js-highlights]',
         search: '[data-js-search]',
         img: '[data-js-img]',
         location: '[data-js-location]',
         temp: '[data-js-temp]',
         dateTime: '[data-js-date-time]',
-        desc: '[data-js-desc]',
-        hum: '[data-js-humidity]',
-        feel: '[data-js-feels-like]',
-        wind: '[data-js-wind]',
+        hum: '[data-js-hum]',
+        wind: '[data-js-wind-speed]',
         temp: '[data-js-temp]',
         forecast: '[data-js-forecast]',
         graphWrapper: '[data-js-graph-wrapper]',
         airQuality: '[data-js-air-quality]',
         uvIndex: '[data-js-uv-index]',
-        suggestions: '[data-js-suggestions]'
+        suggestions: '[data-js-suggestions]',
+        weatherTitle: '[data-js-weather-title]',
+        sunsetTime: '[data-js-sunset-time]',
+        sunriseTime: '[data-js-sunrise-time]',
+        visibility: '[data-js-vis]',
+        pressure: '[data-js-pressure]',
+        feelsLike: '[data-js-feels-like]',
+        chanceOfRain: '[data-js-chance-of-rain]',
+        chanceOfSnow: '[data-js-chance-of-snow]'
     };
 
     apiKey = 'f03eba2e18d64401b84150205260402';
@@ -33,6 +40,15 @@ class weatherApp {
         "July", "August", "September", "October", "November", "December"
     ];
     timeOfday = "day"
+
+    count = 25;
+    angle = 300 / this.count;
+    radius = 1420;
+    currentAngle = 0;
+    isDragging = false;
+    startX = 0;
+    prevX = 0;
+    velocity = 0;
 
     constructor() {
         this.root = document.querySelector(this.selectors.root);
@@ -50,9 +66,20 @@ class weatherApp {
         this.uvIndex = this.aside.querySelector(this.selectors.uvIndex);
 
         this.weather = this.root.querySelector(this.selectors.weather);
-        this.weatherContainer = this.weather.closest('.weather-container');
-        this.btnLeft = this.weatherContainer?.querySelector('.scroll-btn.left');
-        this.btnRight = this.weatherContainer?.querySelector('.scroll-btn.right');
+        this.weatherTitle = this.root.querySelector(this.selectors.weatherTitle);
+
+        this.highlights = this.root.querySelector(this.selectors.highlights);
+        this.uvIndexEl = this.highlights.querySelector(this.selectors.uvIndex);
+        this.hum = this.highlights.querySelector(this.selectors.hum);
+        this.wind = this.highlights.querySelector(this.selectors.wind);
+        this.sunriseTime = this.highlights.querySelector(this.selectors.sunriseTime);
+        this.sunsetTime = this.highlights.querySelector(this.selectors.sunsetTime);
+        this.visibility = this.highlights.querySelector(this.selectors.visibility);
+        this.pressure = this.highlights.querySelector(this.selectors.pressure);
+        this.wind = this.highlights.querySelector(this.selectors.wind);
+        this.feelsLike = this.highlights.querySelector(this.selectors.feelsLike);
+        this.chanceOfRain = this.highlights.querySelector(this.selectors.chanceOfRain);
+        this.chanceOfSnow = this.highlights.querySelector(this.selectors.chanceOfSnow);
 
         this.bindEvents();
         this.updateClock()
@@ -67,6 +94,8 @@ class weatherApp {
             }
         );
     }
+
+
 
     debounce(func, delay) {
         let timeout;
@@ -168,21 +197,67 @@ class weatherApp {
             hoursArray.push(totalHours[index]);
         }
 
-        const already = this.weather.children.length >= 24;
-        if (already) {
+        if (this.weather.children.length >= 24) {
             for (let el of this.weather.children) {
                 this.updateAttrs(el, hoursArray[i++]);
             }
         } else {
-            hoursArray.forEach((hour) => {
-                this.weather.append(this.createEl(hour));
-            });
-            // scroll the current hour into view
-            requestAnimationFrame(() => {
-                const currentCard = this.weather.children[this.hours] || this.weather.children[0];
-                currentCard?.scrollIntoView({ behavior: 'smooth', inline: 'start' });
+            hoursArray.forEach((hour, i) => {
+                const rot = i * this.angle;
+                const el = this.createEl(hour)
+                this.weather.append(el);
+                el.style.transform = `rotateY(-${rot}deg) translateZ(-${this.radius}px)`;
             });
         }
+    }
+
+    updateRotation() {
+        this.weather.style.transform = `rotateY(${this.currentAngle}deg)`;
+    }
+
+    onDown(e) {
+        this.isDragging = true;
+        this.startX = this.prevX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        this.velocity = 0;
+        e.preventDefault();
+    }
+
+    onMove(e) {
+        if (!this.isDragging) return;
+
+        const x = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        const delta = x - this.prevX;
+
+        this.velocity = delta * -0.1;
+        this.currentAngle += this.velocity;
+
+        // Ограничение ротации между первым и последним элементом
+        this.currentAngle = Math.max(20, Math.min(this.currentAngle, 265));
+
+        this.updateRotation();
+
+        this.prevX = x;
+    }
+
+    onUp() {
+        if (!this.isDragging) return;
+        this.isDragging = false;
+
+        function inertia() {
+            if (Math.abs(this.velocity) < 1.5) return;
+
+            this.currentAngle += this.velocity;
+
+            // Ограничение ротации между первым и последним элементом
+            const maxAngle = (this.count - 1) * this.angle;
+            this.currentAngle = Math.max(15, Math.min(this.currentAngle, maxAngle));
+
+            this.velocity *= 0.6; // Замедление
+            this.updateRotation();
+            requestAnimationFrame(inertia.bind(this));
+        }
+
+        requestAnimationFrame(inertia.bind(this));
     }
 
     bindEvents() {
@@ -193,27 +268,14 @@ class weatherApp {
                 this.fetchWeather(this.search.value.trim());
             }
         });
+        this.weather.addEventListener('mousedown', this.onDown.bind(this));
+        this.weather.addEventListener('touchstart', this.onDown.bind(this), { passive: false });
 
-        // horizontal wheel scrolling
-        if (this.weather) {
-            this.weather.addEventListener('wheel', (e) => {
-                if (e.deltaY === 0) return;
-                e.preventDefault();
-                this.weather.scrollLeft += e.deltaY;
-            }, { passive: false });
-        }
+        window.addEventListener('mousemove', this.onMove.bind(this));
+        window.addEventListener('touchmove', this.onMove.bind(this), { passive: false });
 
-        // arrow buttons
-        if (this.btnLeft) {
-            this.btnLeft.addEventListener('click', () => {
-                this.weather.scrollBy({ left: -this.weather.clientWidth * 0.6, behavior: 'smooth' });
-            });
-        }
-        if (this.btnRight) {
-            this.btnRight.addEventListener('click', () => {
-                this.weather.scrollBy({ left: this.weather.clientWidth * 0.6, behavior: 'smooth' });
-            });
-        }
+        window.addEventListener('mouseup', this.onUp.bind(this));
+        window.addEventListener('touchend', this.onUp.bind(this));
     }
 
     createSuggestionLi(city) {
@@ -235,9 +297,7 @@ class weatherApp {
         fetch(url)
             .then(response => response.json())
             .then(data => {
-                console.log(data);
                 data.forEach((city) => {
-                    console.log(this.createSuggestionLi(city));
                     const li = this.createSuggestionLi(city);
                     li.addEventListener('click', () => {
                         this.search.value = `${city.name}, ${city.region}`;
@@ -250,6 +310,38 @@ class weatherApp {
                 })
             })
 
+    }
+
+    getAsideBackground(code) {
+        switch (code) {
+            // Clear
+            case 1000:
+                return "clear.avif";
+
+            // Cloudy
+            case 1003: case 1006: case 1009: case 1030:
+            case 1135: case 1147:
+                return "cloudy.avif";
+
+            // Rainy
+            case 1063: case 1150: case 1153: case 1168: case 1171:
+            case 1180: case 1183: case 1186: case 1189: case 1192:
+            case 1195: case 1198: case 1201: case 1240: case 1243:
+            case 1246: case 1273: case 1276:
+                return "rainy.avif";
+
+            // Snowy
+            case 1066: case 1069: case 1072: case 1114: case 1117:
+            case 1204: case 1207: case 1210: case 1213: case 1216:
+            case 1219: case 1222: case 1225: case 1237: case 1249:
+            case 1252: case 1255: case 1258: case 1261: case 1264:
+            case 1279: case 1282:
+                return "snowy.avif";
+
+            // Default fallback
+            default:
+                return "clear.avif";
+        }
     }
 
     fetchWeather(q) {
@@ -272,7 +364,21 @@ class weatherApp {
                 this.renderForecastCards(forecastday);
                 this.airQuality.setAttribute('value', data.current.air_quality["us-epa-index"]);
                 this.uvIndex.setAttribute('value', data.current.uv);
+                this.weatherTitle.textContent = data.current.condition.text;
+                this.aside.style.backgroundImage = `url(./images/${this.timeOfday}/${this.getAsideBackground(code)})`;
 
+                this.uvIndexEl.textContent = data.current.uv;
+                this.hum.textContent = `${data.current.humidity}%`;
+                this.wind.textContent = `${data.current.wind_kph} km/h`;
+                this.sunriseTime.textContent = data.forecast.forecastday[0].astro.sunrise;
+                this.sunsetTime.textContent = data.forecast.forecastday[0].astro.sunset;
+                this.visibility.textContent = `${data.current.vis_km} km`;
+                this.pressure.textContent = `${data.current.pressure_mb} mb`;
+                this.feelsLike.textContent = `${data.current.feelslike_c}°C`;
+                this.chanceOfRain.textContent = `${data.forecast.forecastday[0].day.daily_chance_of_rain}%`;
+                this.chanceOfSnow.textContent = `${data.forecast.forecastday[0].day.daily_chance_of_snow}%`;
+
+                
             })
             .catch(error => {
                 console.error('Error fetching weather data:', error);
@@ -281,4 +387,3 @@ class weatherApp {
 }
 
 const WeatherApp = new weatherApp();
-// this.temp.textContent = `${Math.round(data.main.temp)}°C (Feels like: ${Math.round(data.main.feels_like)}°C)`;

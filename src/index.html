@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./styles/style.css">
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="./scripts/index.js" type="module" defer></script>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <title>Weather App</title>
@@ -57,11 +58,15 @@
                 </gauge-indicator>
             </article>
         </aside>
-        <section data-js-weather class="weather item">
+        <section class="weather item">
+            <h2>Weather forecast for the next 24 hours
+                <p data-js-weather-title></p>
+            </h2>
+            <div data-js-weather class="weather-inner"></div>
         </section>
-        <section class="highlights item">
-            <h3>Today's highlights</h3>
-            <article class="forecast-card">
+        <section data-js-highlights class="highlights item">
+            <h2>Today's highlights</h2>
+            <article class="info-card">
                 <p class="UV-index">
                     <span>Uv index - </span>
                     <span data-js-uv-index></span>
@@ -88,13 +93,26 @@
                     <span>Visibility - </span>
                     <span data-js-vis></span>
                 </p>
-                <p class="air-quality">
-                    <span>Air quality - </span>
-                    <span data-js-air-qua></span>
+                <p class="pressure">
+                    <span>Pressure - </span>
+                    <span data-js-pressure></span>
+                </p>
+            </article>
+            <article class="info-card">
+                <p class="feels-like">
+                    <span>Feels like - </span>
+                    <span data-js-feels-like></span>
+                </p>
+                <p class="chance-of-rain">
+                    <span>Chance of rain - </span>
+                    <span data-js-chance-of-rain></span>
+                </p>
+                <p class="chance-of-snow">
+                    <span>Chance of snow - </span>
+                    <span data-js-chance-of-snow></span>
                 </p>
             </article>
         </section>
     </main>
-    <axqwsxq </body>
-
+    </body>
 </html>

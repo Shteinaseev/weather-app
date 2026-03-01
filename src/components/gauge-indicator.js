@@ -1,4 +1,7 @@
 import { getStatus } from '../config/statuses.js';
+
+
+
 export class GaugeIndicator extends HTMLElement {
     static observedAttributes = ['value', 'max', 'title', 'scale', 'view-width', 'view-height'];
 
