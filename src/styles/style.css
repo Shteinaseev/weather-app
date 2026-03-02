@@ -68,7 +68,7 @@ article {
     grid-template-areas:
         "aside weather"
         "aside highlights";
-    grid-template-columns: 26rem 1fr;
+    grid-template-columns: 28rem 1fr;
     column-gap: 2rem;
     padding: clamp(1rem, 2.4vh, 1.5rem);
 
@@ -325,7 +325,7 @@ article {
 
     .weather-inner {
         padding: 1rem;
-        width: 420px;
+        width: 620px;
         height: 18.8rem;
         position: relative;
         transform-style: preserve-3d;
@@ -376,9 +376,9 @@ article {
     height: 50vh;
     padding: clamp(1rem, 2.4vh, 1.5rem);
     display: grid;
-    grid-template-rows: auto 1fr;
-    gap: 1.2rem;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-rows: auto 260px;
+    gap: clamp(0.2rem, 1.28vh, 0.8rem);
+    grid-template-columns: repeat(3, 30%);
     place-items: center;
 
     h2 {
@@ -390,8 +390,8 @@ article {
     }
 
     article {
-        width: 320px;
-        height: 260px;
+        width: 100%;
+        height: 100%;
         flex-direction: column;
         justify-content: center;
         row-gap: .8rem;
@@ -404,12 +404,11 @@ article {
             font-weight: 300;
         }
 
-        #map {
-            width: 320px;
-            height: 260px;
-            border: 1px solid #ccc;
-            /* необязательно, просто рамка */
-        }
+    }
+}
 
+@media (max-width: 1305px) {
+    .content {
+        width: 100vw;
     }
 }

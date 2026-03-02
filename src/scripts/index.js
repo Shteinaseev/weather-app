@@ -20,7 +20,7 @@ class weatherApp {
         airQuality: '[data-js-air-quality]',
         uvIndex: '[data-js-uv-index]',
         suggestions: '[data-js-suggestions]',
-        weatherTitle: '[data-js-weather-title]',
+        weatherDesc: '[data-js-weather-desc]',
         sunsetTime: '[data-js-sunset-time]',
         sunriseTime: '[data-js-sunrise-time]',
         visibility: '[data-js-vis]',
@@ -66,7 +66,8 @@ class weatherApp {
         this.uvIndex = this.aside.querySelector(this.selectors.uvIndex);
 
         this.weather = this.root.querySelector(this.selectors.weather);
-        this.weatherTitle = this.root.querySelector(this.selectors.weatherTitle);
+        this.weatherDesc = this.aside.querySelector(this.selectors.weatherDesc);
+        this.weather.style.transform = `rotateY(${this.getMinimalAngle()}deg)`;
 
         this.highlights = this.root.querySelector(this.selectors.highlights);
         this.uvIndexEl = this.highlights.querySelector(this.selectors.uvIndex);
@@ -222,6 +223,19 @@ class weatherApp {
         e.preventDefault();
     }
 
+    getMinimalAngle() {
+
+        const parentElWidth = this.weather.parentElement.offsetWidth;
+
+        // convert linear distance (half the width) to radians, then to
+        // degrees
+        const halfWidth = parentElWidth / 3.8;
+        const radians = halfWidth / this.radius;
+        const degrees = radians * (180 / Math.PI);
+
+        return degrees;
+    }
+
     onMove(e) {
         if (!this.isDragging) return;
 
@@ -231,9 +245,11 @@ class weatherApp {
         this.velocity = delta * -0.1;
         this.currentAngle += this.velocity;
 
-        // Ограничение ротации между первым и последним элементом
-        this.currentAngle = Math.max(20, Math.min(this.currentAngle, 265));
-
+        // ensure we don't rotate past first or last card; the upper bound
+        // is based on the number of items and the per‑item angle increment
+        const maxAngle = (this.count - 1) * this.angle;
+        this.currentAngle = Math.max(this.getMinimalAngle(), Math.min(this.currentAngle, maxAngle));
+        console.log(this.getMinimalAngle())
         this.updateRotation();
 
         this.prevX = x;
@@ -250,7 +266,7 @@ class weatherApp {
 
             // Ограничение ротации между первым и последним элементом
             const maxAngle = (this.count - 1) * this.angle;
-            this.currentAngle = Math.max(15, Math.min(this.currentAngle, maxAngle));
+            this.currentAngle = Math.max(this.getMinimalAngle(), Math.min(this.currentAngle, maxAngle));
 
             this.velocity *= 0.6; // Замедление
             this.updateRotation();
@@ -364,7 +380,7 @@ class weatherApp {
                 this.renderForecastCards(forecastday);
                 this.airQuality.setAttribute('value', data.current.air_quality["us-epa-index"]);
                 this.uvIndex.setAttribute('value', data.current.uv);
-                this.weatherTitle.textContent = data.current.condition.text;
+                this.weatherDesc.textContent = data.current.condition.text;
                 this.aside.style.backgroundImage = `url(./images/${this.timeOfday}/${this.getAsideBackground(code)})`;
 
                 this.uvIndexEl.textContent = data.current.uv;
@@ -378,7 +394,6 @@ class weatherApp {
                 this.chanceOfRain.textContent = `${data.forecast.forecastday[0].day.daily_chance_of_rain}%`;
                 this.chanceOfSnow.textContent = `${data.forecast.forecastday[0].day.daily_chance_of_snow}%`;
 
-                
             })
             .catch(error => {
                 console.error('Error fetching weather data:', error);
