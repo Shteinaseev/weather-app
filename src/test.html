@@ -1,117 +1,357 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Precipitation Map – WeatherAPI</title>
-  
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5n/N0aVIE=" crossorigin=""/>
-  
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Карта осадков</title>
+
+  <!-- MapTiler SDK CSS -->
+  <link href="https://cdn.maptiler.com/maptiler-sdk-js/v2.0.0/maptiler-sdk.css" rel="stylesheet" />
 
   <style>
-    body { margin: 0; padding: 0; }
-    #map { height: 100vh; }
-    .info-legend {
-      background: rgba(255,255,255,0.85);
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .legend {
+      position: absolute;
+      bottom: 30px;
+      right: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      min-width: 180px;
+    }
+
+    .legend h4 {
+      margin: 0 0 10px 0;
+      color: #333;
+      font-size: 16px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 5px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin: 8px 0;
+      font-size: 14px;
+    }
+
+    .color-box {
+      width: 24px;
+      height: 20px;
+      margin-right: 10px;
+      border-radius: 4px;
+    }
+
+    .city-tag {
+      background: white;
+      border: 2px solid #333;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      min-width: 100px;
+    }
+
+    .city-tag .temp {
+      font-size: 20px;
+      color: #d32f2f;
+    }
+
+    .city-tag .precip {
+      font-size: 14px;
+      color: #1976d2;
+      margin-top: 4px;
+    }
+
+    .title {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .title span {
+      color: #1976d2;
+    }
+
+    .controls {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: white;
       padding: 10px;
-      border-radius: 6px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+    }
+
+    .controls button {
+      padding: 8px 16px;
+      margin: 0 5px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .controls button.active {
+      background: #1976d2;
+      color: white;
+    }
+
+    .controls button:hover {
+      opacity: 0.8;
     }
   </style>
 </head>
+
 <body>
+  <div id="map"></div>
 
-<div id="map"></div>
+  <!-- Заголовок -->
+  <div class="title">
+    🌧️ <span>Карта осадков</span>
+  </div>
 
-<script>
-// Инициализация карты (центр на США, как у тебя на скрине)
-const map = L.map('map').setView([38, -98], 5);
+  <!-- Легенда -->
+  <div class="legend">
+    <h4>🌧️ Интенсивность осадков</h4>
+    <div class="legend-item">
+      <div class="color-box" style="background: #ffffcc;"></div>
+      <span>Слабые (0-1 мм/ч)</span>
+    </div>
+    <div class="legend-item">
+      <div class="color-box" style="background: #a1dab4;"></div>
+      <span>Умеренные (1-5 мм/ч)</span>
+    </div>
+    <div class="legend-item">
+      <div class="color-box" style="background: #41b6c4;"></div>
+      <span>Сильные (5-10 мм/ч)</span>
+    </div>
+    <div class="legend-item">
+      <div class="color-box" style="background: #225ea8;"></div>
+      <span>Очень сильные (10-20 мм/ч)</span>
+    </div>
+    <div class="legend-item">
+      <div class="color-box" style="background: #0c2c54;"></div>
+      <span>Экстремальные (>20 мм/ч)</span>
+    </div>
+    <div style="margin-top: 15px; font-size: 12px; color: #666; text-align: center;">
+      Данные обновляются каждые 10 минут
+    </div>
+  </div>
 
-// Базовая карта (светлая, чтобы осадки хорошо были видны)
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-  subdomains: 'abcd',
-  maxZoom: 19
-}).addTo(map);
+  <!-- Кнопки управления -->
+  <div class="controls">
+    <button id="btnRadar" class="active">🎯 Радар</button>
+    <button id="btnForecast">📅 Прогноз</button>
+    <button id="btnAnimate">▶ Анимация</button>
+  </div>
 
-// Слой осадков от WeatherAPI
-// Важно: {0}{1} → это для выбора времени (00, 01, 02... до 72 часов вперёд)
-const precipLayer = L.tileLayer('https://weathermaps.weatherapi.com/precip/tiles/00/{z}/{x}/{y}.png', {
-  opacity: 0.75,           // полупрозрачный, как на большинстве погодных карт
-  attribution: 'Weather tiles &copy; <a href="https://www.weatherapi.com/">WeatherAPI.com</a>',
-  maxZoom: 10,
-  minZoom: 3,
-  bounds: [[-85, -180], [85, 180]]   // глобальные границы
-}).addTo(map);
+  <!-- Подключаем скрипты -->
+  <script src="https://cdn.maptiler.com/maptiler-sdk-js/v2.0.0/maptiler-sdk.umd.min.js"></script>
+  <script src="https://cdn.maptiler.com/weather/v1.0.0/maptiler-weather.umd.min.js"></script>
 
+  <script>
+    // Ваш API ключ с MapTiler
+    const API_KEY = 'FEI2ZJDnGcrvTFnSyu4k'; // Замените на свой ключ!
 
-// Можно сделать переключатель времени (0–72 часа)
-const times = [0, 3, 6, 12, 24];
-const timeControl = L.control({position: 'topright'});
+    maptilersdk.config.apiKey = API_KEY;
 
-timeControl.onAdd = function () {
-  const div = L.DomUtil.create('div', 'info-legend');
-  div.innerHTML = '<h4>Осадки через:</h4>';
+    // Создаем карту
+    const map = new maptilersdk.Map({
+      container: 'map',
+      style: maptilersdk.MapStyle.STREETS.DARK, // Темная тема для контраста с осадками
+      center: [19.83335, 45.2671],
+      zoom: 7,
+      hash: true
+    });
 
-  times.forEach(hours => {
-    const btn = L.DomUtil.create('button', '', div);
-    btn.innerHTML = hours + ' ч';
-    btn.style.margin = '4px';
-    btn.onclick = () => {
-      const timeStr = String(hours).padStart(2, '0');
-      precipLayer.setUrl(`https://weathermaps.weatherapi.com/precip/tiles/${timeStr}/{z}/{x}/{y}.png`);
-      // можно подсветить активную кнопку, но для простоты опустим
-    };
-  });
+    const cities = [
+      { name: 'Novi Sad', lat: 45.2671, lng: 19.8335 },
+      { name: 'Subotica', lat: 46.1005, lng: 19.6781 },
+      { name: 'Zrenjanin', lat: 45.3789, lng: 20.3967 },
+      { name: 'Pančevo', lat: 44.8749, lng: 20.6457 },
+      { name: 'Sombor', lat: 45.7809, lng: 19.1122 },
+      { name: 'Kikinda', lat: 45.8325, lng: 20.4652 }
+    ];
 
-  return div;
-};
+    // Добавляем контролы навигации
+    map.addControl(new maptilersdk.NavigationControl(), 'top-left');
 
-timeControl.addTo(map);
+    // Переменные для слоев и анимации
+    let precipitationLayer;
+    let animationInterval;
+    let currentTimeIndex = 0;
 
+    // Функция получения цвета для осадков (кастомная градация)
+    function getPrecipColor(precipMM) {
+      if (precipMM >= 20) return '#0c2c54'; // Экстремальные
+      if (precipMM >= 10) return '#225ea8'; // Очень сильные
+      if (precipMM >= 5) return '#41b6c4';  // Сильные
+      if (precipMM >= 1) return '#a1dab4';  // Умеренные
+      return '#ffffcc';                       // Слабые
+    }
 
-// Легенда осадков (примерная, цвета примерно как у WeatherAPI)
-const legend = L.control({position: 'bottomright'});
+    // Функция добавления слоя осадков
+    function addPrecipitationLayer() {
+      // Удаляем старый слой если есть
+      if (precipitationLayer) {
+        map.removeLayer(precipitationLayer);
+      }
 
-legend.onAdd = function () {
-  const div = L.DomUtil.create('div', 'info-legend');
-  div.innerHTML += '<strong>Осадки</strong><br>';
-  const grades = ['Слабые', 'Умеренные', 'Сильные', 'Экстремальные'];
-  const colors = ['#00ffff', '#0000ff', '#800080', '#ff0000']; // примерные цвета
+      // Создаем новый слой осадков с кастомными настройками
+      precipitationLayer = new maptilerweather.PrecipitationLayer({
+        opacity: 0.8,
+        colorScheme: {
+          getColor: getPrecipColor // Используем нашу цветовую схему
+        },
+        visibility: 'visible',
+        minzoom: 0,
+        maxzoom: 22
+      });
 
-  for (let i = 0; i < grades.length; i++) {
-    div.innerHTML +=
-      '<i style="background:' + colors[i] + '; width:18px; height:18px; display:inline-block; margin-right:6px;"></i> ' +
-      grades[i] + '<br>';
-  }
-  return div;
-};
+      map.addLayer(precipitationLayer);
+    }
 
-legend.addTo(map);
+    async function addCityMarkers() {
+      for (const city of cities) {
+        try {
+          // Получаем погоду для города
+          const weather = await maptilerweather.getCurrentWeather(city.lat, city.lng);
 
-// Маркеры с температурой (как у тебя на скрине)
-function addTempMarker(lat, lng, temp, precipProb = '') {
-  const marker = L.marker([lat, lng], {
-    icon: L.divIcon({
-      className: 'temp-marker',
-      html: `<div style="background:white; padding:4px 8px; border-radius:4px; box-shadow:0 1px 4px rgba(0,0,0,0.4); font-weight:bold;">
-               ${temp}°<br>${precipProb ? precipProb + '%' : ''}
-             </div>`,
-      iconSize: [60, 40],
-      iconAnchor: [30, 20]
-    })
-  }).addTo(map);
-}
+          // Создаем красивый маркер
+          const markerHtml = document.createElement('div');
+          markerHtml.className = 'city-tag';
+          markerHtml.innerHTML = `
+                        <div style="font-size: 16px;">${city.name}</div>
+                        <div class="temp">${Math.round(weather.temp)}°C</div>
+                        <div class="precip">🌧 ${weather.precipitation.toFixed(1)} мм</div>
+                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                            💧 ${weather.humidity}%
+                        </div>
+                    `;
 
-// Примеры маркеров (можно получать через API)
-addTempMarker(37.77, -122.42, 21, 90);  // San Francisco
-addTempMarker(34.05, -118.24, 23);       // Los Angeles
-addTempMarker(32.78, -96.80, 30);        // Dallas
+          // Добавляем маркер на карту
+          console.log(markerHtml);
+          new maptilersdk.Marker({ element: markerHtml })
+            .setLngLat([city.lng, city.lat])
+            .addTo(map);
 
-</script>
+        } catch (error) {
+          console.error(`Ошибка загрузки данных для ${city.name}:`, error);
+        }
+      }
+    }
+
+    // Функция анимации осадков (почасовой прогноз)
+    function animatePrecipitation() {
+      if (animationInterval) {
+        clearInterval(animationInterval);
+      }
+
+      let hour = 0;
+      animationInterval = setInterval(() => {
+        const timeLabels = ['Сейчас', '+1ч', '+2ч', '+3ч', '+4ч', '+5ч', '+6ч'];
+
+        if (precipitationLayer) {
+          console.log(`Показываем: ${timeLabels[hour]}`);
+
+          // Меняем заголовок
+          document.querySelector('.title span').textContent =
+            `Осадки (${timeLabels[hour]})`;
+        }
+
+        hour = (hour + 1) % 7;
+      }, 2000);
+    }
+
+    // Функция переключения режимов
+    function setupControls() {
+      document.getElementById('btnRadar').addEventListener('click', () => {
+        // Режим радара (текущие осадки)
+        if (animationInterval) clearInterval(animationInterval);
+        document.querySelector('.title span').textContent = 'Радар осадков';
+        updateActiveButton('btnRadar');
+
+        // Обновляем слой для текущего времени
+        if (precipitationLayer) {
+          // В реальном API здесь будет setTime(new Date())
+        }
+      });
+
+      document.getElementById('btnForecast').addEventListener('click', () => {
+        // Режим прогноза
+        if (animationInterval) clearInterval(animationInterval);
+        document.querySelector('.title span').textContent = 'Прогноз осадков';
+        updateActiveButton('btnForecast');
+      });
+
+      document.getElementById('btnAnimate').addEventListener('click', () => {
+        // Режим анимации
+        updateActiveButton('btnAnimate');
+        animatePrecipitation();
+      });
+    }
+
+    function updateActiveButton(activeId) {
+      ['btnRadar', 'btnForecast', 'btnAnimate'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (id === activeId) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    // Ждем загрузки карты
+    map.on('load', () => {
+      // Добавляем слой осадков
+      addPrecipitationLayer();
+
+      // Добавляем маркеры городов
+      addCityMarkers();
+
+      // Настраиваем кнопки
+      setupControls();
+
+      // Добавляем информацию о масштабе
+      map.addControl(new maptilersdk.ScaleControl(), 'bottom-left');
+
+      console.log('Карта осадков готова!');
+    });
+
+    // Обработка ошибок
+    window.addEventListener('error', (e) => {
+      console.error('Ошибка:', e.error);
+    });
+
+  </script>
 </body>
+
 </html>

@@ -248,6 +248,7 @@ class weatherApp {
         // ensure we don't rotate past first or last card; the upper bound
         // is based on the number of items and the per‑item angle increment
         const maxAngle = (this.count - 1) * this.angle;
+        console.log(maxAngle)
         this.currentAngle = Math.max(this.getMinimalAngle(), Math.min(this.currentAngle, maxAngle));
         console.log(this.getMinimalAngle())
         this.updateRotation();
@@ -370,7 +371,6 @@ class weatherApp {
                 const { location } = data
                 const { forecastday } = data.forecast
 
-                console.log(data);
                 this.timeOfday = data.current.is_day ? "day" : "night";
                 this.setMainIcon(code);
                 this.location.textContent = `${location.name}, ${location.country}`;

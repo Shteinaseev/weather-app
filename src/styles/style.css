@@ -237,7 +237,7 @@ article {
 
 .graph-wrapper {
     justify-content: center;
-    column-gap: clamp(1rem, 2.4vh, 2.5rem);
+    gap: clamp(1rem, 2.4vh, 2.5rem);
     justify-content: space-around;
     padding: clamp(1rem, 2.4vh, 1.5rem);
 
@@ -469,6 +469,10 @@ article {
 }
 
 @media (max-width: 580px) {
+    .content {
+        padding: 0;
+    }
+
     .content aside {
         .wrapper {
             display: contents;
@@ -476,17 +480,26 @@ article {
     }
 
     .highlights {
-        height: 580px;
+        height: 850px;
 
         .wrapper {
             flex-wrap: wrap;
             column-gap: 0.5rem;
             row-gap: 0.8rem;
+            justify-content: center;
 
             article {
-                flex-basis: 48%;
+                flex-basis: 80%;
+                min-width: 180px;
             }
         }
     }
 
+}
+
+@media (max-width: 350px) {
+    .graph-wrapper {
+        flex-direction: column;
+        align-items: center;
+    }
 }
