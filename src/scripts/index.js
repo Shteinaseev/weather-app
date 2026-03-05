@@ -224,54 +224,46 @@ class weatherApp {
     }
 
     getMinimalAngle() {
-        const container = this.weather.parentElement;
-        if (!container) return 0;
+        const w = this.weather.parentElement?.offsetWidth || 1000;
 
-        const w = container.offsetWidth;
+        // Определяем "желаемую" долю от ширины в зависимости от размера экрана
+        let targetFraction;
+        if (w <= 450) {
+            targetFraction = 0.35;
+        } else if (w <= 550) {
+            targetFraction = 0.4;
+        } else if (w <= 800) {
+            targetFraction = 0.45;
+        } else if (w <= 900) {
+            targetFraction = 0.5;
+        } else if (w <= 1200) {
+            targetFraction = 0.55;
+        } else {
+            targetFraction = 0.35;
+        }
 
-        // Сколько пикселей ОТ ЦЕНТРА влево хотим сместить первую карточку
-        // Варианты:
-        // 0.35–0.45 w  → карточка довольно далеко слева (часто выглядит хорошо)
-        // 0.50 w       → примерно на границе левой половины
-        const offsetFromCenterPx = w * 0.45;   // ← начни с 0.38–0.42, подбери под глаз
-
-        // Угол в радианах
-        const angleRad = Math.asin(offsetFromCenterPx / this.radius);
-
-        let minAngleDeg = angleRad * (180 / Math.PI);
-
-        // Если карточка должна быть ЕЩЁ левее (почти у самого края) — увеличь коэффициент до 0.48–0.55
-        // Если хочешь чуть правее — уменьши до 0.30–0.35
-
-        // Можно добавить небольшой фиксированный сдвиг для красоты
-        // minAngleDeg += 4;   // или -3, пробуй ±2..±8°
-
-        return minAngleDeg;
+        const offsetPx = w * targetFraction;
+        const rad = Math.asin(Math.min(1, offsetPx / this.radius));  // защита от >90°
+        return rad * (180 / Math.PI);
     }
 
     getMaxAngle() {
         const baseMax = (this.count - 1) * this.angle;   // 326.4°
 
-        const w = window.innerWidth || 1200;
+        const w = this.weather.parentElement?.offsetWidth || 1200;
 
         // На широких экранах уменьшаем максимальный поворот
-        let reduction = 0;
+        let reduction = 10;
 
-        if (w > 1200) {
-            reduction = (w - 1200) * 0.018;   // пример: +500 px → -9°, +700 px → -12.6°
-        }
-
-        // или более точная привязка под твои 1700 px → ~300°
-        // reduction = Math.max(0, (w - 1000) * 0.022);   // подбери коэффициент
-
-        // или ступенчато, чтобы было проще отлаживать
-        if (w > 1800) reduction = 35;
-        else if (w > 1500) reduction = 26;   // ≈326.4 - 26 = 300.4° на 1700 px
-        else if (w > 1300) reduction = 15;
-
-        
+        if (w >= 1200) reduction = 45;
+        else if (w >= 900) reduction = 35;
+        else if (w >= 800) reduction = 28;
+        else if (w >= 750) reduction = 24;
+        else if (w >= 650) reduction = 20;
+        else if (w >= 550) reduction = 16;
+        else if (w <= 350) reduction = 8;
         const maxAngle = baseMax - reduction;
-        console.log(reduction)
+
         // Не даём упасть слишком низко
         return Math.max(240, maxAngle);
     }
