@@ -42,8 +42,8 @@ class weatherApp {
     timeOfday = "day"
 
     count = 25;
-    angle = 300 / this.count;
-    radius = 1420;
+    angle = 340 / this.count;
+    radius = 1250;
     currentAngle = 0;
     isDragging = false;
     startX = 0;
@@ -224,16 +224,56 @@ class weatherApp {
     }
 
     getMinimalAngle() {
+        const container = this.weather.parentElement;
+        if (!container) return 0;
 
-        const parentElWidth = this.weather.parentElement.offsetWidth;
+        const w = container.offsetWidth;
 
-        // convert linear distance (half the width) to radians, then to
-        // degrees
-        const halfWidth = parentElWidth / 3.8;
-        const radians = halfWidth / this.radius;
-        const degrees = radians * (180 / Math.PI);
+        // Сколько пикселей ОТ ЦЕНТРА влево хотим сместить первую карточку
+        // Варианты:
+        // 0.35–0.45 w  → карточка довольно далеко слева (часто выглядит хорошо)
+        // 0.50 w       → примерно на границе левой половины
+        const offsetFromCenterPx = w * 0.45;   // ← начни с 0.38–0.42, подбери под глаз
 
-        return degrees;
+        // Угол в радианах
+        const angleRad = Math.asin(offsetFromCenterPx / this.radius);
+
+        let minAngleDeg = angleRad * (180 / Math.PI);
+
+        // Если карточка должна быть ЕЩЁ левее (почти у самого края) — увеличь коэффициент до 0.48–0.55
+        // Если хочешь чуть правее — уменьши до 0.30–0.35
+
+        // Можно добавить небольшой фиксированный сдвиг для красоты
+        // minAngleDeg += 4;   // или -3, пробуй ±2..±8°
+
+        return minAngleDeg;
+    }
+
+    getMaxAngle() {
+        const baseMax = (this.count - 1) * this.angle;   // 326.4°
+
+        const w = window.innerWidth || 1200;
+
+        // На широких экранах уменьшаем максимальный поворот
+        let reduction = 0;
+
+        if (w > 1200) {
+            reduction = (w - 1200) * 0.018;   // пример: +500 px → -9°, +700 px → -12.6°
+        }
+
+        // или более точная привязка под твои 1700 px → ~300°
+        // reduction = Math.max(0, (w - 1000) * 0.022);   // подбери коэффициент
+
+        // или ступенчато, чтобы было проще отлаживать
+        if (w > 1800) reduction = 35;
+        else if (w > 1500) reduction = 26;   // ≈326.4 - 26 = 300.4° на 1700 px
+        else if (w > 1300) reduction = 15;
+
+        
+        const maxAngle = baseMax - reduction;
+        console.log(reduction)
+        // Не даём упасть слишком низко
+        return Math.max(240, maxAngle);
     }
 
     onMove(e) {
@@ -245,12 +285,8 @@ class weatherApp {
         this.velocity = delta * -0.1;
         this.currentAngle += this.velocity;
 
-        // ensure we don't rotate past first or last card; the upper bound
-        // is based on the number of items and the per‑item angle increment
-        const maxAngle = (this.count - 1) * this.angle;
-        console.log(maxAngle)
-        this.currentAngle = Math.max(this.getMinimalAngle(), Math.min(this.currentAngle, maxAngle));
-        console.log(this.getMinimalAngle())
+        this.currentAngle = Math.max(this.getMinimalAngle(), Math.min(this.currentAngle, this.getMaxAngle()));
+        console.log(this.getMinimalAngle(), this.getMaxAngle())
         this.updateRotation();
 
         this.prevX = x;
@@ -267,7 +303,7 @@ class weatherApp {
 
             // Ограничение ротации между первым и последним элементом
             const maxAngle = (this.count - 1) * this.angle;
-            this.currentAngle = Math.max(this.getMinimalAngle(), Math.min(this.currentAngle, maxAngle));
+            this.currentAngle = Math.max(this.getMinimalAngle(), Math.min(this.currentAngle, this.getMaxAngle()));
 
             this.velocity *= 0.6; // Замедление
             this.updateRotation();
@@ -371,6 +407,7 @@ class weatherApp {
                 const { location } = data
                 const { forecastday } = data.forecast
 
+                console.log(data);
                 this.timeOfday = data.current.is_day ? "day" : "night";
                 this.setMainIcon(code);
                 this.location.textContent = `${location.name}, ${location.country}`;

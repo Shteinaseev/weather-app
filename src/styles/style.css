@@ -307,10 +307,11 @@ article {
 }
 
 .weather {
+    width: auto;
     padding-top: 1.2rem;
     grid-area: weather;
     height: 45vh;
-    perspective: 5400px;
+    perspective: 1800px;
     perspective-origin: 50% 50%;
     touch-action: pan-y;
     overflow: hidden;
@@ -334,7 +335,7 @@ article {
 
     .weather-inner {
         padding: 1rem;
-        width: 620px;
+        width: 420px;
         height: 18.8rem;
         position: relative;
         transform-style: preserve-3d;
