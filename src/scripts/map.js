@@ -9,14 +9,13 @@ import { PrecipitationLayer, ColorRamp } from '@maptiler/weather';
 
 
 export class PrecipitationMap {
-    constructor() {
+    constructor(lng, lat) {
         config.apiKey = 'FEI2ZJDnGcrvTFnSyu4k';
         this.map = new Map({
             container: 'map',
             style: MapStyle.STREETS.DARK,
-            center: [16.62662018, 49.2125578], // starting position [lng, lat]
+            center: [lng, lat], 
             zoom: 7,
-            hash: true,
             projectionControl: true
         });
 

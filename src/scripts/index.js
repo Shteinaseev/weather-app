@@ -97,7 +97,6 @@ class weatherApp {
             }
         );
 
-        this.PrecipitationMap = new PrecipitationMap();
     }
 
 
@@ -405,7 +404,8 @@ class weatherApp {
                 const { location } = data
                 const { forecastday } = data.forecast
 
-                console.log(data);
+                this.PrecipitationMap = new PrecipitationMap(location.lon, location.lat);
+
                 this.timeOfday = data.current.is_day ? "day" : "night";
                 this.setMainIcon(code);
                 this.location.textContent = `${location.name}, ${location.country}`;
@@ -424,6 +424,7 @@ class weatherApp {
                 this.sunsetTime.textContent = data.forecast.forecastday[0].astro.sunset;
                 this.visibility.textContent = `${data.current.vis_km} km`;
                 this.pressure.textContent = `${data.current.pressure_mb} mb`;
+
 
             })
             .catch(error => {
