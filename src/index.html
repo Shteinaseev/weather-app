@@ -18,6 +18,8 @@
             <feDisplacementMap in="SourceGraphic" in2="noise" scale="77" />
         </filter>
     </svg>
+
+    <glass-spinner></glass-spinner>
     <main data-js class="content">
         <div class="glass-filter"></div>
         <div class="glass-overlay"></div>
@@ -68,54 +70,49 @@
         </section>
         <section data-js-highlights class="highlights item">
             <h2>Today's highlights</h2>
-            <div class="wrapper">
-                <article class="info-card">
-                    <p class="UV-index">
-                        <span>Uv index - </span>
-                        <span data-js-uv-index></span>
-                    </p>
-                    <p class="wind-speed">
-                        <span>Wind speed - </span>
-                        <span data-js-wind-speed></span>
-                    </p>
-                    <p class="sunrise">
-                        <span>Sunrise - </span>
-                        <span data-js-sunrise-time></span>
-                    </p>
-                    <p class="sunset">
-                        <span>Sunset - </span>
-                        <span data-js-sunset-time></span>
-                    </p>
-                </article>
-                <article class="info-card">
-                    <p class="humidity">
-                        <span>Humidity - </span>
-                        <span data-js-hum></span>
-                    </p>
-                    <p class="visibillity">
-                        <span>Visibility - </span>
-                        <span data-js-vis></span>
-                    </p>
-                    <p class="pressure">
-                        <span>Pressure - </span>
-                        <span data-js-pressure></span>
-                    </p>
-                </article>
-                <article class="info-card">
-                    <p class="feels-like">
-                        <span>Feels like - </span>
-                        <span data-js-feels-like></span>
-                    </p>
-                    <p class="chance-of-rain">
-                        <span>Chance of rain - </span>
-                        <span data-js-chance-of-rain></span>
-                    </p>
-                    <p class="chance-of-snow">
-                        <span>Chance of snow - </span>
-                        <span data-js-chance-of-snow></span>
-                    </p>
-                </article>
-            </div>
+            <article class="info-card card1">
+                <p class="wind-speed">
+                    <span>Wind speed - </span>
+                    <span data-js-wind-speed></span>
+                </p>
+                <p class="sunrise">
+                    <span>Sunrise - </span>
+                    <span data-js-sunrise-time></span>
+                </p>
+                <p class="sunset">
+                    <span>Sunset - </span>
+                    <span data-js-sunset-time></span>
+                </p>
+            </article>
+            <article class="info-card card2">
+                <p class="humidity">
+                    <span>Humidity - </span>
+                    <span data-js-hum></span>
+                </p>
+                <p class="visibillity">
+                    <span>Visibility - </span>
+                    <span data-js-vis></span>
+                </p>
+                <p class="pressure">
+                    <span>Pressure - </span>
+                    <span data-js-pressure></span>
+                </p>
+            </article>
+            <article class="info-card precipitation-map">
+                <div id="map-container">
+                    <div id="map"></div>
+                    <div class="legend">
+                        <h4>Precipitation intensity</h4>
+                        <div class="precipitation-scale"></div>
+                        <div class="text-wrapper">
+                            <p>Light</p>
+                            <p>Moderate</p>
+                            <p>Heavy</p>
+                            <p>Extreme</p>
+                        </div>
+                    </div>
+                </div>
+            </article>
         </section>
     </main>
 </body>

@@ -4,11 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
+  "devDependencies": {
     "vite": "^7.3.1"
+  },
+  "dependencies": {
+    "@maptiler/sdk": "^3.11.1",
+    "@maptiler/weather": "^3.1.1"
   }
 }

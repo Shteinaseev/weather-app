@@ -1,5 +1,8 @@
 import { GaugeIndicator } from '../components/gauge-indicator.js';
 import { forecastCard } from '../components/forecast-card.js';
+import { GlassSpinner } from '../components/glass-spinner.js';
+import { PrecipitationMap } from './map.js';
+
 
 class weatherApp {
     selectors = {
@@ -70,7 +73,6 @@ class weatherApp {
         this.weather.style.transform = `rotateY(${this.getMinimalAngle()}deg)`;
 
         this.highlights = this.root.querySelector(this.selectors.highlights);
-        this.uvIndexEl = this.highlights.querySelector(this.selectors.uvIndex);
         this.hum = this.highlights.querySelector(this.selectors.hum);
         this.wind = this.highlights.querySelector(this.selectors.wind);
         this.sunriseTime = this.highlights.querySelector(this.selectors.sunriseTime);
@@ -94,6 +96,8 @@ class weatherApp {
                 this.fetchWeather('auto:ip');
             }
         );
+
+        this.PrecipitationMap = new PrecipitationMap();
     }
 
 
@@ -392,6 +396,8 @@ class weatherApp {
     fetchWeather(q) {
         const url = `${this.apiUrl}?key=${this.apiKey}&q=${q}&aqi=yes&days=3`;
 
+        document.dispatchEvent(new CustomEvent('weather-fetch-start'));
+
         fetch(url)
             .then(response => response.json())
             .then(data => {
@@ -412,21 +418,21 @@ class weatherApp {
                 this.weatherDesc.textContent = data.current.condition.text;
                 this.aside.style.backgroundImage = `url(./images/${this.timeOfday}/${this.getAsideBackground(code)})`;
 
-                this.uvIndexEl.textContent = data.current.uv;
                 this.hum.textContent = `${data.current.humidity}%`;
                 this.wind.textContent = `${data.current.wind_kph} km/h`;
                 this.sunriseTime.textContent = data.forecast.forecastday[0].astro.sunrise;
                 this.sunsetTime.textContent = data.forecast.forecastday[0].astro.sunset;
                 this.visibility.textContent = `${data.current.vis_km} km`;
                 this.pressure.textContent = `${data.current.pressure_mb} mb`;
-                this.feelsLike.textContent = `${data.current.feelslike_c}°C`;
-                this.chanceOfRain.textContent = `${data.forecast.forecastday[0].day.daily_chance_of_rain}%`;
-                this.chanceOfSnow.textContent = `${data.forecast.forecastday[0].day.daily_chance_of_snow}%`;
 
             })
             .catch(error => {
                 console.error('Error fetching weather data:', error);
+            })
+            .finally(() => {
+                document.dispatchEvent(new CustomEvent('weather-fetch-end'));
             });
+
     }
 }
 

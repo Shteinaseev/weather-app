@@ -1,0 +1,108 @@
+:host {
+    --bg-color: rgba(255, 255, 255, 0.25);
+    --highlight: rgba(255, 255, 255, 0.75);
+    --spinner-size: 100px;
+    --ring-size: 64px;
+    --core-size: 24px;
+
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background-image: radial-gradient(circle closest-corner, #130f40, #000);
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: .6s;
+
+    &[hidden],
+    &.hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+}
+
+.glass-filter,
+.glass-overlay,
+.glass-specular {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+}
+
+.glass-filter {
+    z-index: 101;
+    backdrop-filter: blur(4px);
+    filter: url(#glass-distortion) saturate(120%) brightness(1.25);
+}
+
+.glass-overlay {
+    z-index: 102;
+    background: #ffffff11;
+}
+
+.glass-specular {
+    z-index: 103;
+    box-shadow: inset 1px 1px 1px #ffffffaa;
+}
+
+
+.glass-wrapper {
+    position: relative;
+    width: var(--spinner-size);
+    height: var(--spinner-size);
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.glass-content {
+    position: relative;
+    z-index: 104;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.spinner-ring {
+    position: absolute;
+    width: var(--ring-size);
+    height: var(--ring-size);
+    border: 2px solid transparent;
+    border-top-color: rgba(255, 255, 255, 0.8);
+    border-right-color: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.spinner-core {
+    width: var(--core-size);
+    height: var(--core-size);
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    animation: pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes pulse {
+    from {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+}

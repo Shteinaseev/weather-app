@@ -5,10 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Карта осадков</title>
-
-  <!-- MapTiler SDK CSS -->
   <link href="https://cdn.maptiler.com/maptiler-sdk-js/v2.0.0/maptiler-sdk.css" rel="stylesheet" />
-
   <style>
     body {
       margin: 0;
@@ -131,12 +128,6 @@
 
 <body>
   <div id="map"></div>
-
-  <!-- Заголовок -->
-  <div class="title">
-    🌧️ <span>Карта осадков</span>
-  </div>
-
   <!-- Легенда -->
   <div class="legend">
     <h4>🌧️ Интенсивность осадков</h4>
@@ -164,25 +155,14 @@
       Данные обновляются каждые 10 минут
     </div>
   </div>
-
-  <!-- Кнопки управления -->
-  <div class="controls">
-    <button id="btnRadar" class="active">🎯 Радар</button>
-    <button id="btnForecast">📅 Прогноз</button>
-    <button id="btnAnimate">▶ Анимация</button>
-  </div>
-
   <!-- Подключаем скрипты -->
-  <script src="https://cdn.maptiler.com/maptiler-sdk-js/v2.0.0/maptiler-sdk.umd.min.js"></script>
-  <script src="https://cdn.maptiler.com/weather/v1.0.0/maptiler-weather.umd.min.js"></script>
-
+  <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.11.0/maptiler-sdk.umd.min.js"></script>
+  <script src="https://cdn.maptiler.com/weather/v3.1.1/maptiler-weather.umd.min.js"></script>
   <script>
-    // Ваш API ключ с MapTiler
     const API_KEY = 'FEI2ZJDnGcrvTFnSyu4k'; // Замените на свой ключ!
 
     maptilersdk.config.apiKey = API_KEY;
 
-    // Создаем карту
     const map = new maptilersdk.Map({
       container: 'map',
       style: maptilersdk.MapStyle.STREETS.DARK, // Темная тема для контраста с осадками
@@ -191,45 +171,35 @@
       hash: true
     });
 
-    const cities = [
-      { name: 'Novi Sad', lat: 45.2671, lng: 19.8335 },
-      { name: 'Subotica', lat: 46.1005, lng: 19.6781 },
-      { name: 'Zrenjanin', lat: 45.3789, lng: 20.3967 },
-      { name: 'Pančevo', lat: 44.8749, lng: 20.6457 },
-      { name: 'Sombor', lat: 45.7809, lng: 19.1122 },
-      { name: 'Kikinda', lat: 45.8325, lng: 20.4652 }
-    ];
-
-    // Добавляем контролы навигации
     map.addControl(new maptilersdk.NavigationControl(), 'top-left');
 
-    // Переменные для слоев и анимации
     let precipitationLayer;
     let animationInterval;
     let currentTimeIndex = 0;
 
-    // Функция получения цвета для осадков (кастомная градация)
-    function getPrecipColor(precipMM) {
-      if (precipMM >= 20) return '#0c2c54'; // Экстремальные
-      if (precipMM >= 10) return '#225ea8'; // Очень сильные
-      if (precipMM >= 5) return '#41b6c4';  // Сильные
-      if (precipMM >= 1) return '#a1dab4';  // Умеренные
-      return '#ffffcc';                       // Слабые
-    }
+    const ColorRamp = maptilerweather.ColorRamp;
 
-    // Функция добавления слоя осадков
+    const customStops = [
+      [0.00, '#ffffcc'],     // 0 мм/ч
+      [0.02, '#a1dab4'],     // ~1 мм/ч (нормализуй 1/50 = 0.02)
+      [0.10, '#41b6c4'],     // 5/50 = 0.10
+      [0.20, '#225ea8'],     // 10/50 = 0.20
+      [0.40, '#0c2c54'],
+      [1.00, '#0c2c54']
+    ];
+
+    const customRamp = ColorRamp.fromStops(customStops, { smooth: true });  // smooth: true для градиента
+
     function addPrecipitationLayer() {
-      // Удаляем старый слой если есть
       if (precipitationLayer) {
         map.removeLayer(precipitationLayer);
       }
+      
+      const customRamp = ColorRamp.fromStops(customStops, { smooth: true });
 
-      // Создаем новый слой осадков с кастомными настройками
       precipitationLayer = new maptilerweather.PrecipitationLayer({
         opacity: 0.8,
-        colorScheme: {
-          getColor: getPrecipColor // Используем нашу цветовую схему
-        },
+        colorramp: customRamp,
         visibility: 'visible',
         minzoom: 0,
         maxzoom: 22
@@ -238,115 +208,15 @@
       map.addLayer(precipitationLayer);
     }
 
-    async function addCityMarkers() {
-      for (const city of cities) {
-        try {
-          // Получаем погоду для города
-          const weather = await maptilerweather.getCurrentWeather(city.lat, city.lng);
-
-          // Создаем красивый маркер
-          const markerHtml = document.createElement('div');
-          markerHtml.className = 'city-tag';
-          markerHtml.innerHTML = `
-                        <div style="font-size: 16px;">${city.name}</div>
-                        <div class="temp">${Math.round(weather.temp)}°C</div>
-                        <div class="precip">🌧 ${weather.precipitation.toFixed(1)} мм</div>
-                        <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                            💧 ${weather.humidity}%
-                        </div>
-                    `;
-
-          // Добавляем маркер на карту
-          console.log(markerHtml);
-          new maptilersdk.Marker({ element: markerHtml })
-            .setLngLat([city.lng, city.lat])
-            .addTo(map);
-
-        } catch (error) {
-          console.error(`Ошибка загрузки данных для ${city.name}:`, error);
-        }
-      }
-    }
-
-    // Функция анимации осадков (почасовой прогноз)
-    function animatePrecipitation() {
-      if (animationInterval) {
-        clearInterval(animationInterval);
-      }
-
-      let hour = 0;
-      animationInterval = setInterval(() => {
-        const timeLabels = ['Сейчас', '+1ч', '+2ч', '+3ч', '+4ч', '+5ч', '+6ч'];
-
-        if (precipitationLayer) {
-          console.log(`Показываем: ${timeLabels[hour]}`);
-
-          // Меняем заголовок
-          document.querySelector('.title span').textContent =
-            `Осадки (${timeLabels[hour]})`;
-        }
-
-        hour = (hour + 1) % 7;
-      }, 2000);
-    }
-
-    // Функция переключения режимов
-    function setupControls() {
-      document.getElementById('btnRadar').addEventListener('click', () => {
-        // Режим радара (текущие осадки)
-        if (animationInterval) clearInterval(animationInterval);
-        document.querySelector('.title span').textContent = 'Радар осадков';
-        updateActiveButton('btnRadar');
-
-        // Обновляем слой для текущего времени
-        if (precipitationLayer) {
-          // В реальном API здесь будет setTime(new Date())
-        }
-      });
-
-      document.getElementById('btnForecast').addEventListener('click', () => {
-        // Режим прогноза
-        if (animationInterval) clearInterval(animationInterval);
-        document.querySelector('.title span').textContent = 'Прогноз осадков';
-        updateActiveButton('btnForecast');
-      });
-
-      document.getElementById('btnAnimate').addEventListener('click', () => {
-        // Режим анимации
-        updateActiveButton('btnAnimate');
-        animatePrecipitation();
-      });
-    }
-
-    function updateActiveButton(activeId) {
-      ['btnRadar', 'btnForecast', 'btnAnimate'].forEach(id => {
-        const btn = document.getElementById(id);
-        if (id === activeId) {
-          btn.classList.add('active');
-        } else {
-          btn.classList.remove('active');
-        }
-      });
-    }
-
-    // Ждем загрузки карты
     map.on('load', () => {
-      // Добавляем слой осадков
       addPrecipitationLayer();
 
-      // Добавляем маркеры городов
-      addCityMarkers();
-
-      // Настраиваем кнопки
-      setupControls();
-
-      // Добавляем информацию о масштабе
       map.addControl(new maptilersdk.ScaleControl(), 'bottom-left');
 
+      console.log('Слои после загрузки:', map.getStyle().layers);
       console.log('Карта осадков готова!');
     });
 
-    // Обработка ошибок
     window.addEventListener('error', (e) => {
       console.error('Ошибка:', e.error);
     });
