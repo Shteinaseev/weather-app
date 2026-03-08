@@ -157,7 +157,7 @@ class weatherApp {
 
     setMainIcon(code) {
         console.log(code)
-        this.img.setAttribute('src', `icons/${this.timeOfday}/${code}.png`)
+        this.img.setAttribute('src', `./icons/${this.timeOfday}/${code}.png`)
     }
 
     setForecastNextTwoDays(forecastday) {
@@ -165,7 +165,7 @@ class weatherApp {
         dayEls.forEach((i, j) => {
             let { code, text } = forecastday[j + 1].day.condition;
             let { date } = forecastday[j + 1]
-            i.children[0].setAttribute('src', `icons/${this.timeOfday}/${code}.png`);
+            i.children[0].setAttribute('src', `./icons/${this.timeOfday}/${code}.png`);
             i.children[1].textContent = this.formateDate(date);
             i.children[2].textContent = text;
         })
