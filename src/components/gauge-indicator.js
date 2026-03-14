@@ -31,7 +31,6 @@ export class GaugeIndicator extends HTMLElement {
                 }
 
                 svg {
-                    filter: drop-shadow(0rem 0rem 1rem #9874FF);
                     path {
                         stroke-linecap: round;
                     }

@@ -1,3 +1,5 @@
+import styles from './forecast-card.css?inline';
+
 export class forecastCard extends HTMLElement {
 
     static observedAttributes = ['time', 'code', 'temp_c', 'is_day'];
@@ -9,6 +11,7 @@ export class forecastCard extends HTMLElement {
 
     constructor() {
         super();
+        this.attachShadow({ mode: 'open' });
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -22,11 +25,14 @@ export class forecastCard extends HTMLElement {
     }
 
     render() {
-        this.innerHTML = `
+        this.shadowRoot.innerHTML = `
+            <style>
+                ${styles}
+            </style>
             <p class="time">
                 ${this.time}
             </p>
-            <img src="./icons/${this.timeOfday}/${this.code}.png" alt="" class="card-logo">
+            <img src="./icons/${this.timeOfday}/${this.code}.png" alt="" class="card-logo" loading="lazy">
             <p class="temp">${this.temp_c}°C</p>
             
         `
